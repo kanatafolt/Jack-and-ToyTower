@@ -1,5 +1,7 @@
-﻿//オブジェクトの回転中心をcenter座標へ変更するスクリプト
+﻿//
+//オブジェクトの回転中心をcenter座標へ変更するスクリプト
 //回転中心を表す空のゲームオブジェクトを親にして、このスクリプトをつけてもよい(centerは0,0,0にする)
+//
 
 using System.Collections;
 using System.Collections.Generic;

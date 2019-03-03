@@ -61,6 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\CenterOfMass.cs" />
+    <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
+    <Compile Include="Assets\Scripts\SpringSimulation.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>F:/FoltDocument/Develop/GitHub/Jack-and-ToyTower/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
