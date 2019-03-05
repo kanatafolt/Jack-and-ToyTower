@@ -12,13 +12,18 @@ public class PlayerCharacterController : MonoBehaviour
     const float MAX_JUMP_CHARGE = 0.6f;     //ジャンプの最大溜め時間及びジャンプ力係数
     const float MIN_SPRING_SCALE = 0.1f;    //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;     //移動発生周期
+    const float COVER_CLOSE_TIMING = 0.7f;  //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
 
     [SerializeField] GameObject springObj, coverObj;
     private Rigidbody rb;
 
     private float initialSpringScale;       //ジャンプキーを押下した瞬間のバネの長さを一時保存する
+    private bool stopCoverAngle = false;
     private float jumpCharge, moveCharge;
     private Vector3 moveDir;
+    private float coverCloseRate;
+
+    private bool enableJump = true;
 
     private void Reset()
     {
@@ -46,12 +51,10 @@ public class PlayerCharacterController : MonoBehaviour
 
                 //一回の小ジャンプ移動が発生
                 moveDir = (Vector3.forward * Input.GetAxis("Vertical") + Vector3.right * Input.GetAxis("Horizontal")).normalized;
-                rb.velocity += moveDir * 2.0f;
-                rb.velocity += transform.TransformDirection(Vector3.up * 1.0f);
-                //springObj.transform.localScale = new Vector3(1.0f, springObj.transform.localScale.y - 0.1f, 1.0f);
-                //coverObj.transform.Rotate(Vector3.right * 15.0f);
+                rb.velocity = new Vector3 (moveDir.x * 2.0f, rb.velocity.y, moveDir.z * 2.0f);
+                if (enableJump) rb.velocity += transform.TransformDirection(Vector3.up * 1.0f);
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
-                coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.0f, 0.1f);
+                coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.5f, 0.1f);
             }
         }
 
@@ -63,28 +66,52 @@ public class PlayerCharacterController : MonoBehaviour
 
         if (Input.GetButtonDown("Jump"))
         {
-            //ジャンプキーを押したとき：ばねの挙動を一時的に止める
+            //ジャンプキーを押したとき：ばねとカバーの挙動を一時的に止める
             springObj.GetComponent<SpringSimulation>().enableSpring = false;
             initialSpringScale = springObj.transform.localScale.y;
         }
 
         if (Input.GetButton("Jump"))
         {
-            //ジャンプキーを押している間：押す長さに応じて体を縮める(jumpChargeが溜まる)
+            //ジャンプキーを押している間：押す時間に応じて体を縮める(jumpChargeが溜まる)
             jumpCharge += Time.deltaTime;
             if (jumpCharge > MAX_JUMP_CHARGE) jumpCharge = MAX_JUMP_CHARGE;
 
             float shrinkLen = initialSpringScale - MIN_SPRING_SCALE;
             shrinkLen *= jumpCharge / MAX_JUMP_CHARGE;
             springObj.transform.localScale = new Vector3(1.0f, initialSpringScale - shrinkLen, 1.0f);
+
+            if (jumpCharge / MAX_JUMP_CHARGE >= COVER_CLOSE_TIMING)
+            {
+                //カバーを閉め始める
+                if (!stopCoverAngle)
+                {
+                    stopCoverAngle = true;
+                    coverObj.GetComponent<SpringSimulation>().enableSpring = false;
+                    coverCloseRate = Vector3.Angle(coverObj.transform.forward, transform.forward) / (MAX_JUMP_CHARGE * (1.0f - COVER_CLOSE_TIMING));
+                }
+
+                if (Vector3.Angle(coverObj.transform.forward, transform.forward) > coverCloseRate * Time.deltaTime)
+                {
+                    coverObj.transform.Rotate(Vector3.right * coverCloseRate * Time.deltaTime);
+                }
+                else
+                {
+                    coverObj.transform.forward = transform.TransformDirection(Vector3.forward);
+                }
+            }
         }
 
         if (Input.GetButtonUp("Jump"))
         {
             //ジャンプキーを離したとき：jumpChargeの値に応じてジャンプする
             springObj.GetComponent<SpringSimulation>().enableSpring = true;
-            rb.velocity += transform.TransformDirection(Vector3.up * (jumpCharge * 8.0f));
+            coverObj.GetComponent<SpringSimulation>().enableSpring = true;
+            coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f, 0.1f);
+            if (enableJump) rb.velocity = new Vector3 (rb.velocity.x, 0.0f, rb.velocity.z) + transform.TransformDirection(Vector3.up * (jumpCharge * 8.0f));
             jumpCharge = 0.0f;
+            stopCoverAngle = false;
+            enableJump = false;
         }
     }
 
@@ -102,5 +129,10 @@ public class PlayerCharacterController : MonoBehaviour
         {
             if(moveDir != Vector3.zero) transform.forward = moveDir;
         }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.tag == "floor") enableJump = true;
     }
 }
