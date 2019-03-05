@@ -22,6 +22,7 @@ public class PlayerCharacterController : MonoBehaviour
     private float jumpCharge, moveCharge;
     private Vector3 moveDir;
     private float coverCloseRate;
+    private float onePrevHeight, twoPrevHeight;
 
     private bool enableJump = true;
 
@@ -35,13 +36,18 @@ public class PlayerCharacterController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         moveDir = transform.forward;
+        onePrevHeight = twoPrevHeight = transform.position.y;
     }
 
     void Update()
     {
         //移動周期を計算
         if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
-        
+
+        if (transform.position.y == twoPrevHeight) enableJump = true;
+        twoPrevHeight = onePrevHeight;
+        onePrevHeight = transform.position.y;
+
         if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
         {
             //移動キーを押している間：周期的に小ジャンプ移動
@@ -56,6 +62,18 @@ public class PlayerCharacterController : MonoBehaviour
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
                 coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.5f, 0.1f);
             }
+        }
+
+        if (Input.GetButtonUp("Vertical"))
+        {
+            //上下移動キーを離したとき：前後方向への移動を止める
+            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, 0.0f);
+        }
+
+        if (Input.GetButtonUp("Horizontal"))
+        {
+            //左右移動キーを離したとき：左右方向への移動を止める
+            rb.velocity = new Vector3(0.0f, rb.velocity.y, rb.velocity.z);
         }
 
         if ((Input.GetButtonUp("Vertical") && !Input.GetButton("Horizontal")) || (Input.GetButtonUp("Horizontal") && !Input.GetButton("Vertical")) || (Input.GetButtonUp("Vertical") && Input.GetButtonUp("Horizontal")))
