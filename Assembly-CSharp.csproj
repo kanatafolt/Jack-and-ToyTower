@@ -63,6 +63,9 @@
     <Compile Include="Assets\Scripts\CenterOfMass.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
     <Compile Include="Assets\Scripts\SpringSimulation.cs" />
+    <None Include="Assets\ExtraAssets\Textures\wood_pattern\readme.txt" />
+    <None Include="Assets\ExtraAssets\Textures\wood-patterns-PIXEDEN\license-README-FIRST.txt" />
+    <None Include="Assets\ExtraAssets\Textures\Paper-patterns-vol02-PIXEDEN\license-README-FIRST.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>F:/FoltDocument/Develop/GitHub/Jack-and-ToyTower/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
