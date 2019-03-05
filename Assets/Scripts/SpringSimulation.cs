@@ -1,7 +1,8 @@
-﻿//
-//スケール変化や位置・回転ででばねの挙動を表現するスクリプト
-//SpringTransform.position(座標ばね)は未実装
-//
+﻿////
+//SpringSimulation.cs
+//スケール変化や位置・回転ででバネの挙動を表現するスクリプト
+//SpringTransform.position(座標バネ)は未実装
+////
 
 using System.Collections;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ public class SpringSimulation : MonoBehaviour
 
     private float impulseTime, impulsePower;
 
-    void Start()
+    private void Start()
     {
         if (!coordinateParent) coordinateParent = transform;
 
@@ -37,7 +38,7 @@ public class SpringSimulation : MonoBehaviour
         originAngleZ = coordinateParent.InverseTransformDirection(transform.forward);
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         //インパルス処理
         if (impulseTime > 0.0f) impulseTime -= Time.deltaTime;
@@ -45,7 +46,7 @@ public class SpringSimulation : MonoBehaviour
 
         if (enableSpring)
         {
-            //スケールばねの場合
+            //スケールバネの場合
             if (springTransform == SpringTransform.scale)
             {
                 float diff = 0.0f;
@@ -68,7 +69,7 @@ public class SpringSimulation : MonoBehaviour
                 transform.localScale += expansion;
             }
 
-            //回転ばねの場合
+            //回転バネの場合
             if (springTransform == SpringTransform.rotation)
             {
                 float diff = 0.0f;

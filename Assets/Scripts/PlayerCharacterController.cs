@@ -1,6 +1,7 @@
-﻿//
+﻿////
+//PlayerCharacterController.cs
 //プレイヤーキャラクターの移動やジャンプ入力を扱うスクリプト
-//
+////
 
 using System.Collections;
 using System.Collections.Generic;
@@ -32,14 +33,14 @@ public class PlayerCharacterController : MonoBehaviour
         coverObj = GameObject.Find("CoverRig");
     }
 
-    void Start()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         moveDir = transform.forward;
         onePrevHeight = twoPrevHeight = transform.position.y;
     }
 
-    void Update()
+    private void Update()
     {
         //移動周期を計算
         if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
