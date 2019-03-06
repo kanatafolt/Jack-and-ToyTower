@@ -10,34 +10,40 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerCharacterController : MonoBehaviour
 {
-    const float MAX_JUMP_CHARGE = 0.6f;     //ジャンプの最大溜め時間及びジャンプ力係数
+    const float MOVE_LENGTH = 2.0f;         //移動量倍率
+    const float MAX_JUMP_CHARGE = 0.5f;     //ジャンプの最大溜め時間
+    const float MAX_JUMP_HEIGHT = 4.0f;     //ジャンプ力倍率
     const float MIN_SPRING_SCALE = 0.1f;    //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;     //移動発生周期
     const float COVER_CLOSE_TIMING = 0.7f;  //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
+    //const float JUMP_COOL_TIME = 1.0f;    //ジャンプしてからジャンプ可能になるまでの時間
 
-    [SerializeField] GameObject springObj, coverObj;
+    GameObject springObj, coverObj;
     private Rigidbody rb;
+    //private GameObject playerFloorTracer;
 
-    private float initialSpringScale;       //ジャンプキーを押下した瞬間のバネの長さを一時保存する
-    private bool stopCoverAngle = false;
-    private float jumpCharge, moveCharge;
     private Vector3 moveDir;
-    private float coverCloseRate;
-    private float onePrevHeight, twoPrevHeight;
-
+    private float initialSpringScale;       //ジャンプキーを押下した瞬間のバネの長さを一時保存する
     private bool enableJump = true;
+    private float jumpCharge, moveCharge;
+    private bool stopCoverAngle = false;
+    private float coverCloseRate;
+    //private int collidingFloorCount = 0;
+    //private float jumpCoolTime;
+    //private float onePrevHeight, twoPrevHeight;
 
-    private void Reset()
-    {
-        springObj = GameObject.Find("SpringRig");
-        coverObj = GameObject.Find("CoverRig");
-    }
+    ////デバッグ変数
+    //[SerializeField] Renderer ren;
+    //[SerializeField] Material normalMat, collisionMat;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        springObj = GameObject.Find("SpringRig");
+        coverObj = GameObject.Find("CoverRig");
         moveDir = transform.forward;
-        onePrevHeight = twoPrevHeight = transform.position.y;
+        //playerFloorTracer = GameObject.Find("PlayerFloorTracer");
+        //onePrevHeight = twoPrevHeight = transform.position.y;
     }
 
     private void Update()
@@ -45,9 +51,11 @@ public class PlayerCharacterController : MonoBehaviour
         //移動周期を計算
         if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
 
-        if (transform.position.y == twoPrevHeight) enableJump = true;
-        twoPrevHeight = onePrevHeight;
-        onePrevHeight = transform.position.y;
+        ////ジャンプクールタイムが0以下になるか、2フレーム前からy座標が変化していないならジャンプを許可する(凍結)
+        //jumpCoolTime -= Time.deltaTime;
+        //if (jumpCoolTime <= 0.0f || transform.position.y == twoPrevHeight) enableJump = true;
+        //twoPrevHeight = onePrevHeight;
+        //onePrevHeight = transform.position.y;
 
         if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
         {
@@ -57,8 +65,11 @@ public class PlayerCharacterController : MonoBehaviour
                 moveCharge -= MOVE_FREGQUENCY;
 
                 //一回の小ジャンプ移動が発生
-                moveDir = (Vector3.forward * Input.GetAxis("Vertical") + Vector3.right * Input.GetAxis("Horizontal")).normalized;
-                rb.velocity = new Vector3 (moveDir.x * 2.0f, rb.velocity.y, moveDir.z * 2.0f);
+                Vector3 moveDirTemp = Vector3.zero;
+                if (Input.GetButton("Vertical")) moveDirTemp += Vector3.forward * Input.GetAxis("Vertical");
+                if (Input.GetButton("Horizontal")) moveDirTemp += Vector3.right * Input.GetAxis("Horizontal");
+                moveDir = moveDirTemp.normalized;
+                rb.velocity = new Vector3 (moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);
                 if (enableJump) rb.velocity += transform.TransformDirection(Vector3.up * 1.0f);
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
                 coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.5f, 0.1f);
@@ -110,6 +121,7 @@ public class PlayerCharacterController : MonoBehaviour
                     coverCloseRate = Vector3.Angle(coverObj.transform.forward, transform.forward) / (MAX_JUMP_CHARGE * (1.0f - COVER_CLOSE_TIMING));
                 }
 
+                //カバーを閉める
                 if (Vector3.Angle(coverObj.transform.forward, transform.forward) > coverCloseRate * Time.deltaTime)
                 {
                     coverObj.transform.Rotate(Vector3.right * coverCloseRate * Time.deltaTime);
@@ -127,10 +139,11 @@ public class PlayerCharacterController : MonoBehaviour
             springObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f, 0.1f);
-            if (enableJump) rb.velocity = new Vector3 (rb.velocity.x, 0.0f, rb.velocity.z) + transform.TransformDirection(Vector3.up * (jumpCharge * 8.0f));
+            if (enableJump) rb.velocity = new Vector3 (rb.velocity.x, 0.0f, rb.velocity.z) + transform.TransformDirection(Vector3.up * (jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT));
             jumpCharge = 0.0f;
             stopCoverAngle = false;
             enableJump = false;
+            //jumpCoolTime = JUMP_COOL_TIME;
         }
     }
 
@@ -143,8 +156,9 @@ public class PlayerCharacterController : MonoBehaviour
             if (rotDiff >= 5.0f) rotDiff = 5.0f;
             else rotDiff *= 0.1f;
             if (transform.InverseTransformDirection(moveDir).x < 0) rotDiff *= -1;
-            transform.Rotate(Vector3.up * rotDiff);
-        } else
+            rb.MoveRotation(Quaternion.AngleAxis(rotDiff, Vector3.up) * transform.rotation);
+        }
+        else
         {
             if(moveDir != Vector3.zero) transform.forward = moveDir;
         }
@@ -152,6 +166,27 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.tag == "floor") enableJump = true;
+        if (collision.transform.tag == "floor")
+        {
+            //collidingFloorCount++;
+            enableJump = true;
+
+            //floor座標系に追従する
+            //playerFloorTracer.transform.position = transform.position;
+            //playerFloorTracer.transform.rotation = transform.rotation;
+            //playerFloorTracer.transform.SetParent(collision.transform);
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.transform.tag == "floor")
+        {
+            //collidingFloorCount--;
+            //if(collidingFloorCount <= 0) enableJump = false;
+
+            //world座標系に戻る
+            //playerFloorTracer.transform.SetParent(null);
+        }
     }
 }
