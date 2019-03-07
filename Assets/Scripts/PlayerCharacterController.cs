@@ -10,24 +10,29 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerCharacterController : MonoBehaviour
 {
-    const float MOVE_LENGTH = 3.0f;         //移動量倍率
-    const float MAX_JUMP_CHARGE = 0.5f;     //ジャンプの最大溜め時間
-    const float MAX_JUMP_HEIGHT = 4.0f;     //ジャンプ力倍率
-    const float MIN_SPRING_SCALE = 0.1f;    //ばねの最小縮み長さ
-    const float MOVE_FREGQUENCY = 0.2f;     //移動発生周期
-    const float COVER_CLOSE_TIMING = 0.7f;  //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
+    const float MOVE_LENGTH = 3.0f;             //移動量倍率
+    const float FORWARD_MOVE_DECREASE = 0.7f;   //タワー奥行き方向への移動量減衰倍率
+    const float MAX_JUMP_CHARGE = 0.5f;         //ジャンプの最大溜め時間
+    const float MAX_JUMP_HEIGHT = 4.0f;         //ジャンプ力倍率
+    const float MIN_SPRING_SCALE = 0.1f;        //ばねの最小縮み長さ
+    const float MOVE_FREGQUENCY = 0.2f;         //移動発生周期
+    const float COVER_CLOSE_TIMING = 0.7f;      //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
 
-    [SerializeField] GameObject cameraRig, springObj, coverObj;
+    [SerializeField] enum MoveOption { cameraAngle,  polarCoordinates, oculusGoPolarCoordinates, oculusGoControllerAngleAndPolarCoordinates }   //各オプションの詳細説明は後述
+    [SerializeField] MoveOption moveOption = MoveOption.polarCoordinates;
+
+    [SerializeField] GameObject cameraRig, lookAtTracer, springObj, coverObj;
     private Rigidbody rb;
 
-    private Vector3 moveDir;
-    private float initialSpringScale;       //ジャンプキーを押下した瞬間のバネの長さを一時保存する
+    private Vector3 moveDir;                    //進行方向を表す単位ベクトル
     private bool enableJump = true;
     private float jumpCharge, moveCharge;
+    private float initialSpringScale;           //ジャンプキーを押下した瞬間のバネの長さを一時保存する
     private bool stopCoverAngle = false;
     private float coverCloseRate;
     private int collidingFloorCount = 0;
     private float onePrevHeight, twoPrevHeight;
+    private float distanceToTower;
 
     //デバッグ変数
     //[SerializeField] Renderer ren;
@@ -36,6 +41,7 @@ public class PlayerCharacterController : MonoBehaviour
     private void Reset()
     {
         cameraRig = GameObject.Find("CameraRig");
+        lookAtTracer = GameObject.Find("PlayerLookAtTracer");
         springObj = GameObject.Find("SpringRig");
         coverObj = GameObject.Find("CoverRig");
     }
@@ -45,12 +51,11 @@ public class PlayerCharacterController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         moveDir = transform.forward;
         onePrevHeight = twoPrevHeight = transform.position.y;
+        distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
     }
 
     private void Update()
     {
-        float cameraAngle = cameraRig.transform.rotation.eulerAngles.y * Mathf.Deg2Rad;
-
         //移動周期を計算
         if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
 
@@ -59,42 +64,90 @@ public class PlayerCharacterController : MonoBehaviour
         twoPrevHeight = onePrevHeight;
         onePrevHeight = transform.position.y;
 
+        //移動処理
+        Vector3 velTemp = rb.velocity;
+        float moveDirForwardAngle = 0.0f;       //moveOptionごとに、移動の奥行方向としたい方向への角度をラジアンで代入する
+
+        switch (moveOption)
+        {
+            //カメラに対して右をx、奥行きをzとする直交座標移動
+            case MoveOption.cameraAngle:
+                moveDirForwardAngle = cameraRig.transform.rotation.eulerAngles.y * Mathf.Deg2Rad;
+                break;
+
+            //タワー接線方向をx、タワー中心方向をzとする極座標移動
+            case MoveOption.polarCoordinates:
+                moveDirForwardAngle = (lookAtTracer.transform.rotation.eulerAngles.y + 180.0f) * Mathf.Deg2Rad;
+                break;
+
+            //Oculus Goコントローラーの向きにかかわらず、タッチパッド右をタワー接線方向x、タッチパッド上をタワー中心方向zとする極座標移動(簡易対応想定、未実装)
+            case MoveOption.oculusGoPolarCoordinates:
+                //未実装
+                moveDirForwardAngle = (lookAtTracer.transform.rotation.eulerAngles.y + 180.0f) * Mathf.Deg2Rad;
+                break;
+
+            //Oculus Goコントローラーの向きを反映し、カメラからタワーを見てタッチパッドの右側をタワー接線方向x、タワー側をタワー中心方向zとする極座標移動(最終版想定、未実装)
+            case MoveOption.oculusGoControllerAngleAndPolarCoordinates:
+                //未実装
+                moveDirForwardAngle = (lookAtTracer.transform.rotation.eulerAngles.y + 180.0f) * Mathf.Deg2Rad;
+                break;
+        }
+
         if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
         {
             //移動キーを押している間：周期的に小ジャンプ移動
-            if(moveCharge >= MOVE_FREGQUENCY)
+            if (moveCharge >= MOVE_FREGQUENCY)
             {
                 moveCharge -= MOVE_FREGQUENCY;
 
                 //一回の小ジャンプ移動が発生
                 Vector3 moveDirTemp = Vector3.zero;
-                if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(cameraAngle), 0.0f, Mathf.Cos(cameraAngle)) * Input.GetAxis("Vertical");
-                if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(cameraAngle), 0.0f, -Mathf.Sin(cameraAngle)) * Input.GetAxis("Horizontal");
+                if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(moveDirForwardAngle), 0.0f, Mathf.Cos(moveDirForwardAngle)) * Input.GetAxis("Vertical");
+                if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(moveDirForwardAngle), 0.0f, -Mathf.Sin(moveDirForwardAngle)) * Input.GetAxis("Horizontal");
                 moveDir = moveDirTemp.normalized;
-                rb.velocity = new Vector3 (moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);
-                if (enableJump) rb.velocity += transform.TransformDirection(Vector3.up * 1.0f);
+                velTemp = new Vector3(moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);                             //移動量倍率をかける
+                velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
+                velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * FORWARD_MOVE_DECREASE);                                     //タワー中心方向(z)に速度減衰をかける
+                velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
+                if (enableJump) velTemp += transform.TransformDirection(Vector3.up * 1.0f);
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
                 coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.5f, 0.1f);
             }
         }
-
+        
         if (Input.GetButtonUp("Vertical"))
         {
-            //上下移動キーを離したとき：前後方向への移動を止める
-            rb.velocity = new Vector3(rb.velocity.x * Mathf.Abs(Mathf.Cos(cameraAngle)), rb.velocity.y, rb.velocity.z * Mathf.Abs(Mathf.Sin(cameraAngle)));
+            //上下キーを離したとき：タワー中心方向(z)の速度を0にする
+            velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
+            velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * 0.0f);                                                      //タワー中心方向(z)の速度をゼロにする
+            velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
+
+            distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
         }
 
         if (Input.GetButtonUp("Horizontal"))
         {
-            //左右移動キーを離したとき：左右方向への移動を止める
-            rb.velocity = new Vector3(rb.velocity.x * Mathf.Abs(Mathf.Sin(cameraAngle)), rb.velocity.y, rb.velocity.z * Mathf.Abs(Mathf.Cos(cameraAngle)));
+            //左右キーを離したとき：タワー接線方向(x)の速度を0にする
+            velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
+            velTemp = new Vector3(velTemp.x * 0.0f, velTemp.y, velTemp.z);                                                      //タワー接線方向(x)の速度をゼロにする
+            velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
         }
 
         if ((Input.GetButtonUp("Vertical") && !Input.GetButton("Horizontal")) || (Input.GetButtonUp("Horizontal") && !Input.GetButton("Vertical")) || (Input.GetButtonUp("Vertical") && Input.GetButtonUp("Horizontal")))
         {
             //移動キーを完全に離したとき：キャラクター向きの自動回転を中断する
-            rb.velocity = new Vector3(0.0f, rb.velocity.y, 0.0f);
+            velTemp = new Vector3(0.0f, velTemp.y, 0.0f);
             moveDir = transform.forward;
+        }
+
+        if (Input.GetButton("Horizontal") && !Input.GetButton("Vertical"))
+        {
+            //左右キーを押していて、かつ上下キーを離している間：タワーとの距離を一定に保つ
+            float distanceDiff = -distanceToTower + Vector3.Distance(transform.position, lookAtTracer.transform.position);
+
+            velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
+            velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z + distanceDiff * 0.8f);                                       //タワー中心方向(z)へ補正をかける
+            velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
         }
 
         if (Input.GetButtonDown("Jump"))
@@ -142,11 +195,14 @@ public class PlayerCharacterController : MonoBehaviour
             springObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f * jumpCharge / MAX_JUMP_CHARGE, 0.1f);
-            if (enableJump) rb.velocity = new Vector3 (rb.velocity.x, 0.0f, rb.velocity.z) + transform.TransformDirection(Vector3.up * (jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT));
+            if (enableJump) velTemp = new Vector3 (velTemp.x, jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT, velTemp.z);
             jumpCharge = 0.0f;
             stopCoverAngle = false;
             enableJump = false;
         }
+
+        //速度を確定
+        rb.velocity = velTemp;
     }
 
     private void FixedUpdate()
@@ -169,6 +225,7 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        //フロアオブジェクトに触れたとき：ジャンプを許可する
         if (collision.transform.tag == "floor")
         {
             collidingFloorCount++;
@@ -179,6 +236,7 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
+        //フロアオブジェクトから離れたとき：触れているフロアオブジェクトが0ならジャンプを禁止する
         if (collision.transform.tag == "floor")
         {
             collidingFloorCount--;
@@ -189,11 +247,13 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        //ジャンプトリガーがフロアオブジェクトに触れたとき：触れているフロアオブジェクトをカウントする(ジャンプは許可しない)
         if (other.tag == "floor") collidingFloorCount++;
     }
 
     private void OnTriggerExit(Collider other)
     {
+        //ジャンプトリガーがフロアオブジェクトから離れたとき：触れているフロアオブジェクトが0ならジャンプを禁止する
         if (other.tag == "floor")
         {
             collidingFloorCount--;
