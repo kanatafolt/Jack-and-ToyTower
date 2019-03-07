@@ -3,7 +3,7 @@
 //指定条件でプレハブのクローンを生成するスクリプト
 ////
 
-#pragma warning disable 0649
+#pragma warning disable 0649    //ゲームオブジェクトがnullのままであるという警告
 
 using System.Collections;
 using System.Collections.Generic;

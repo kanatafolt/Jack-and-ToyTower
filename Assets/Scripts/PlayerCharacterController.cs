@@ -10,14 +10,14 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerCharacterController : MonoBehaviour
 {
-    const float MOVE_LENGTH = 2.0f;         //移動量倍率
+    const float MOVE_LENGTH = 3.0f;         //移動量倍率
     const float MAX_JUMP_CHARGE = 0.5f;     //ジャンプの最大溜め時間
     const float MAX_JUMP_HEIGHT = 4.0f;     //ジャンプ力倍率
     const float MIN_SPRING_SCALE = 0.1f;    //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;     //移動発生周期
     const float COVER_CLOSE_TIMING = 0.7f;  //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
 
-    GameObject springObj, coverObj;
+    [SerializeField] GameObject cameraRig, springObj, coverObj;
     private Rigidbody rb;
 
     private Vector3 moveDir;
@@ -33,17 +33,24 @@ public class PlayerCharacterController : MonoBehaviour
     //[SerializeField] Renderer ren;
     //[SerializeField] Material normalMat, collisionMat;
 
+    private void Reset()
+    {
+        cameraRig = GameObject.Find("CameraRig");
+        springObj = GameObject.Find("SpringRig");
+        coverObj = GameObject.Find("CoverRig");
+    }
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        springObj = GameObject.Find("SpringRig");
-        coverObj = GameObject.Find("CoverRig");
         moveDir = transform.forward;
         onePrevHeight = twoPrevHeight = transform.position.y;
     }
 
     private void Update()
     {
+        float cameraAngle = cameraRig.transform.rotation.eulerAngles.y * Mathf.Deg2Rad;
+
         //移動周期を計算
         if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
 
@@ -61,8 +68,8 @@ public class PlayerCharacterController : MonoBehaviour
 
                 //一回の小ジャンプ移動が発生
                 Vector3 moveDirTemp = Vector3.zero;
-                if (Input.GetButton("Vertical")) moveDirTemp += Vector3.forward * Input.GetAxis("Vertical");
-                if (Input.GetButton("Horizontal")) moveDirTemp += Vector3.right * Input.GetAxis("Horizontal");
+                if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(cameraAngle), 0.0f, Mathf.Cos(cameraAngle)) * Input.GetAxis("Vertical");
+                if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(cameraAngle), 0.0f, -Mathf.Sin(cameraAngle)) * Input.GetAxis("Horizontal");
                 moveDir = moveDirTemp.normalized;
                 rb.velocity = new Vector3 (moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);
                 if (enableJump) rb.velocity += transform.TransformDirection(Vector3.up * 1.0f);
@@ -74,18 +81,19 @@ public class PlayerCharacterController : MonoBehaviour
         if (Input.GetButtonUp("Vertical"))
         {
             //上下移動キーを離したとき：前後方向への移動を止める
-            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y, 0.0f);
+            rb.velocity = new Vector3(rb.velocity.x * Mathf.Abs(Mathf.Cos(cameraAngle)), rb.velocity.y, rb.velocity.z * Mathf.Abs(Mathf.Sin(cameraAngle)));
         }
 
         if (Input.GetButtonUp("Horizontal"))
         {
             //左右移動キーを離したとき：左右方向への移動を止める
-            rb.velocity = new Vector3(0.0f, rb.velocity.y, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x * Mathf.Abs(Mathf.Sin(cameraAngle)), rb.velocity.y, rb.velocity.z * Mathf.Abs(Mathf.Cos(cameraAngle)));
         }
 
         if ((Input.GetButtonUp("Vertical") && !Input.GetButton("Horizontal")) || (Input.GetButtonUp("Horizontal") && !Input.GetButton("Vertical")) || (Input.GetButtonUp("Vertical") && Input.GetButtonUp("Horizontal")))
         {
             //移動キーを完全に離したとき：キャラクター向きの自動回転を中断する
+            rb.velocity = new Vector3(0.0f, rb.velocity.y, 0.0f);
             moveDir = transform.forward;
         }
 
@@ -133,7 +141,7 @@ public class PlayerCharacterController : MonoBehaviour
             //ジャンプキーを離したとき：jumpChargeの値に応じてジャンプする
             springObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().enableSpring = true;
-            coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f, 0.1f);
+            coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f * jumpCharge / MAX_JUMP_CHARGE, 0.1f);
             if (enableJump) rb.velocity = new Vector3 (rb.velocity.x, 0.0f, rb.velocity.z) + transform.TransformDirection(Vector3.up * (jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT));
             jumpCharge = 0.0f;
             stopCoverAngle = false;
@@ -144,9 +152,10 @@ public class PlayerCharacterController : MonoBehaviour
     private void FixedUpdate()
     {
         //キャラクターが進行方向をゆっくりと向く
-        if (Vector3.Angle(transform.forward, moveDir) >= 0.1f)
+        float rotDiff = Vector3.Angle(transform.forward, moveDir);
+
+        if (rotDiff >= 0.1f)
         {
-            float rotDiff = Vector3.Angle(transform.forward, moveDir);
             if (rotDiff >= 5.0f) rotDiff = 5.0f;
             else rotDiff *= 0.1f;
             if (transform.InverseTransformDirection(moveDir).x < 0) rotDiff *= -1;
