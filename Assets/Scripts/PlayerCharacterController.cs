@@ -13,10 +13,11 @@ public class PlayerCharacterController : MonoBehaviour
     const float MOVE_LENGTH = 3.0f;             //移動量倍率
     const float FORWARD_MOVE_DECREASE = 0.7f;   //タワー奥行き方向への移動量減衰倍率
     const float MAX_JUMP_CHARGE = 0.5f;         //ジャンプの最大溜め時間
-    const float MAX_JUMP_HEIGHT = 4.0f;         //ジャンプ力倍率
+    const float MAX_JUMP_HEIGHT = 5.0f;         //ジャンプ力倍率
     const float MIN_SPRING_SCALE = 0.1f;        //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;         //移動発生周期
     const float COVER_CLOSE_TIMING = 0.7f;      //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
+    const float FIXED_TOWER_DISTANCE = 7.0f;    //タワーに対する固定距離
 
     [SerializeField] enum MoveOption { cameraAngle,  polarCoordinates, oculusGoPolarCoordinates, oculusGoControllerAngleAndPolarCoordinates }   //各オプションの詳細説明は後述
     [SerializeField] MoveOption moveOption = MoveOption.polarCoordinates;
@@ -33,6 +34,7 @@ public class PlayerCharacterController : MonoBehaviour
     private int collidingFloorCount = 0;
     private float onePrevHeight, twoPrevHeight;
     private float distanceToTower;
+    private bool allowForwardMove = true;       //前後移動入力を禁止する
 
     //デバッグ変数
     //[SerializeField] Renderer ren;
@@ -107,7 +109,8 @@ public class PlayerCharacterController : MonoBehaviour
                 moveDir = moveDirTemp.normalized;
                 velTemp = new Vector3(moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);                             //移動量倍率をかける
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
-                velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * FORWARD_MOVE_DECREASE);                                     //タワー中心方向(z)に速度減衰をかける
+                if (allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * FORWARD_MOVE_DECREASE);               //タワー中心方向(z)に速度減衰をかける
+                if (!allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, 0.0f);                                           //allowForwardMoveがfalseならタワー中心方向(z)を0に
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
                 if (enableJump) velTemp += transform.TransformDirection(Vector3.up * 1.0f);
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
@@ -122,7 +125,7 @@ public class PlayerCharacterController : MonoBehaviour
             velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * 0.0f);                                                      //タワー中心方向(z)の速度をゼロにする
             velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
 
-            distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
+            if (allowForwardMove) distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
         }
 
         if (Input.GetButtonUp("Horizontal"))
@@ -248,7 +251,23 @@ public class PlayerCharacterController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         //ジャンプトリガーがフロアオブジェクトに触れたとき：触れているフロアオブジェクトをカウントする(ジャンプは許可しない)
-        if (other.tag == "floor") collidingFloorCount++;
+        if (other.tag == "floor")
+        {
+            collidingFloorCount++;
+        }
+
+        ////スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(凍結中：落下防止バリアの方がよい？)
+        //if (other.tag == "fixedForwardMoveTrigger")
+        //{
+        //    allowForwardMove = false;
+        //    distanceToTower = FIXED_TOWER_DISTANCE;
+        //}
+
+        ////ボトムトリガーに触れたとき：前後移動を許可する
+        //if (other.tag == "allowForwardMoveTrigger")
+        //{
+        //    allowForwardMove = true;
+        //}
     }
 
     private void OnTriggerExit(Collider other)
