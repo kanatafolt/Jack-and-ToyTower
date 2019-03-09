@@ -256,18 +256,18 @@ public class PlayerCharacterController : MonoBehaviour
             collidingFloorCount++;
         }
 
-        ////スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(凍結中：落下防止バリアの方がよい？)
-        //if (other.tag == "fixedForwardMoveTrigger")
-        //{
-        //    allowForwardMove = false;
-        //    distanceToTower = FIXED_TOWER_DISTANCE;
-        //}
+        //スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(落下防止バリアを設置するという代案も可能)
+        if (other.tag == "fixedForwardMoveTrigger")
+        {
+            allowForwardMove = false;
+            distanceToTower = FIXED_TOWER_DISTANCE;
+        }
 
-        ////ボトムトリガーに触れたとき：前後移動を許可する
-        //if (other.tag == "allowForwardMoveTrigger")
-        //{
-        //    allowForwardMove = true;
-        //}
+        //ボトムトリガーに触れたとき：前後移動を許可する
+        if (other.tag == "allowForwardMoveTrigger")
+        {
+            allowForwardMove = true;
+        }
     }
 
     private void OnTriggerExit(Collider other)

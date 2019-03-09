@@ -1,6 +1,6 @@
 ﻿////
 //PlayerLookAtTracer.cs
-//常にタワーの芯(0, y, 0)から「プレイヤーと高さを合わせ」「プレイヤーをLookAtする」監視スクリプト
+//常にタワーの芯(0, y, 0)から「プレイヤーと高さを合わせ」「プレイヤーをLookAtする」transform監視スクリプト
 ////
 
 using System.Collections;
@@ -9,17 +9,17 @@ using UnityEngine;
 
 public class PlayerLookAtTracer : MonoBehaviour
 {
-    [SerializeField]private Transform player, towerRig;
+    [SerializeField]private Transform player, tower;
 
     private void Reset()
     {
         player = GameObject.Find("Jack").GetComponent<Transform>();
-        towerRig = GameObject.Find("TowerRig").GetComponent<Transform>();
+        tower = GameObject.Find("ToyTower").GetComponent<Transform>();
     }
 
     private void Update()
     {
-        transform.position = new Vector3(towerRig.position.x, player.position.y, towerRig.position.z);
+        transform.position = new Vector3(tower.position.x, player.position.y, tower.position.z);
         transform.LookAt(player);
     }
 }
