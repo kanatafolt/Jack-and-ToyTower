@@ -13,7 +13,8 @@ public class PlayerCharacterController : MonoBehaviour
     const float MOVE_LENGTH = 3.0f;             //移動量倍率
     const float FORWARD_MOVE_DECREASE = 0.7f;   //タワー奥行き方向への移動量減衰倍率
     const float MAX_JUMP_CHARGE = 0.5f;         //ジャンプの最大溜め時間
-    const float MAX_JUMP_HEIGHT = 5.0f;         //ジャンプ力倍率
+    const float MIN_JUMP_HEIGHT = 4.5f;         //最低ジャンプ力倍率
+    const float MAX_JUMP_HEIGHT = 6.0f;         //最大ジャンプ力倍率
     const float MIN_SPRING_SCALE = 0.1f;        //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;         //移動発生周期
     const float COVER_CLOSE_TIMING = 0.7f;      //jumpChargeが何割を超えたらカバーを閉め始めるか(0～1)
@@ -194,11 +195,13 @@ public class PlayerCharacterController : MonoBehaviour
 
         if (Input.GetButtonUp("Jump"))
         {
-            //ジャンプキーを離したとき：jumpChargeの値に応じてジャンプする
+            //ジャンプキーを離したとき：jumpCharge溜め段階に応じてジャンプする
             springObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().enableSpring = true;
+            float jumpRate = (jumpCharge >= MAX_JUMP_CHARGE) ? MAX_JUMP_HEIGHT : MIN_JUMP_HEIGHT;                           //三項演算子 a = 条件式 ? 真の場合の値 : 偽の場合の値;
             coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f * jumpCharge / MAX_JUMP_CHARGE, 0.1f);
-            if (enableJump) velTemp = new Vector3 (velTemp.x, jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT, velTemp.z);
+            //if (enableJump) velTemp = new Vector3(velTemp.x, jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT, velTemp.z);  //ジャンプ高さを決定(案1：溜めに比例してジャンプ力が上がる)
+            if (enableJump) velTemp = new Vector3(velTemp.x, jumpRate, velTemp.z);                                          //ジャンプ高さを決定(案2：最低溜めでもジャンプ力あり・2段階)
             jumpCharge = 0.0f;
             stopCoverAngle = false;
             enableJump = false;
