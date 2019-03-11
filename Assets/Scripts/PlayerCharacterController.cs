@@ -262,7 +262,7 @@ public class PlayerCharacterController : MonoBehaviour
         //スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(落下防止バリアを設置するという代案も可能)
         if (other.tag == "fixedForwardMoveTrigger")
         {
-            allowForwardMove = false;
+            //allowForwardMove = false;
             distanceToTower = FIXED_TOWER_DISTANCE;
         }
 
