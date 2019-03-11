@@ -13,7 +13,7 @@ public class PlayerCharacterController : MonoBehaviour
     const float MOVE_LENGTH = 3.0f;             //移動量倍率
     const float FORWARD_MOVE_DECREASE = 0.7f;   //タワー奥行き方向への移動量減衰倍率
     const float MAX_JUMP_CHARGE = 0.5f;         //ジャンプの最大溜め時間
-    const float MIN_JUMP_HEIGHT = 4.5f;         //最低ジャンプ力倍率
+    const float MIN_JUMP_HEIGHT = 4.0f;         //最低ジャンプ力倍率
     const float MAX_JUMP_HEIGHT = 6.0f;         //最大ジャンプ力倍率
     const float MIN_SPRING_SCALE = 0.1f;        //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;         //移動発生周期
@@ -198,10 +198,16 @@ public class PlayerCharacterController : MonoBehaviour
             //ジャンプキーを離したとき：jumpCharge溜め段階に応じてジャンプする
             springObj.GetComponent<SpringSimulation>().enableSpring = true;
             coverObj.GetComponent<SpringSimulation>().enableSpring = true;
-            float jumpRate = (jumpCharge >= MAX_JUMP_CHARGE) ? MAX_JUMP_HEIGHT : MIN_JUMP_HEIGHT;                           //三項演算子 a = 条件式 ? 真の場合の値 : 偽の場合の値;
             coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f * jumpCharge / MAX_JUMP_CHARGE, 0.1f);
-            //if (enableJump) velTemp = new Vector3(velTemp.x, jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT, velTemp.z);  //ジャンプ高さを決定(案1：溜めに比例してジャンプ力が上がる)
-            if (enableJump) velTemp = new Vector3(velTemp.x, jumpRate, velTemp.z);                                          //ジャンプ高さを決定(案2：最低溜めでもジャンプ力あり・2段階)
+
+            if (enableJump)
+            {
+                //velTemp = new Vector3(velTemp.x, jumpCharge / MAX_JUMP_CHARGE * MAX_JUMP_HEIGHT, velTemp.z);                                          //案1：溜めに比例してジャンプ力が上がる
+                //velTemp = new Vector3(velTemp.x, jumpCharge >= MAX_JUMP_CHARGE ? MAX_JUMP_HEIGHT : MIN_JUMP_HEIGHT, velTemp.z);                       //案2：最小or最大の2段階変化(三項演算子)
+                velTemp = new Vector3(velTemp.x, MIN_JUMP_HEIGHT + jumpCharge / MAX_JUMP_CHARGE * (MAX_JUMP_HEIGHT - MIN_JUMP_HEIGHT), velTemp.z);      //案3：最小～最大まで溜めに比例する
+
+            }
+
             jumpCharge = 0.0f;
             stopCoverAngle = false;
             enableJump = false;
@@ -242,7 +248,7 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        //フロアオブジェクトから離れたとき：触れているフロアオブジェクトが0ならジャンプを禁止する
+        //フロアオブジェクトから離れたとき：触れているフロアオブジェクトが0個ならジャンプを禁止する
         if (collision.transform.tag == "floor")
         {
             collidingFloorCount--;
@@ -253,29 +259,29 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        //ジャンプトリガーがフロアオブジェクトに触れたとき：触れているフロアオブジェクトをカウントする(ジャンプは許可しない)
+        //ジャンプトリガーがフロアオブジェクトに触れたとき：OnTriggerExitのフロアカウントを打ち消す
         if (other.tag == "floor")
         {
             collidingFloorCount++;
         }
 
-        //スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(落下防止バリアを設置するという代案も可能)
-        if (other.tag == "fixedForwardMoveTrigger")
-        {
-            //allowForwardMove = false;
-            distanceToTower = FIXED_TOWER_DISTANCE;
-        }
+        ////スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(凍結中)
+        //if (other.tag == "fixedForwardMoveTrigger")
+        //{
+        //    allowForwardMove = false;
+        //    distanceToTower = FIXED_TOWER_DISTANCE;
+        //}
 
-        //ボトムトリガーに触れたとき：前後移動を許可する
-        if (other.tag == "allowForwardMoveTrigger")
-        {
-            allowForwardMove = true;
-        }
+        ////ボトムトリガーに触れたとき：前後移動を許可する(凍結中)
+        //if (other.tag == "allowForwardMoveTrigger")
+        //{
+        //    allowForwardMove = true;
+        //}
     }
 
     private void OnTriggerExit(Collider other)
     {
-        //ジャンプトリガーがフロアオブジェクトから離れたとき：触れているフロアオブジェクトが0ならジャンプを禁止する
+        //ジャンプトリガーがフロアオブジェクトから離れたとき：触れているフロアオブジェクトが0個ならジャンプを禁止する
         if (other.tag == "floor")
         {
             collidingFloorCount--;

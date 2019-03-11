@@ -1,12 +1,11 @@
 ﻿////
 //SwitchManager.cs
-//スイッチオブジェクトのON/OFF動作を管理する基本機能スクリプト
-//スイッチの種類一覧
-//タッチスイッチ(touch)：プレイヤーが接触したら
-//ヒットスイッチ(hardHit)：接触したプレイヤーのvelocity.sqrMagnitudeが一定値以上なら
+//触れると起動するスイッチオブジェクトのON/OFFステートを管理、変化時の描画をするスクリプト
+//拡張案：制限時間を設定する変数を作り、時間制限付きスイッチにも対応する(未実装)
+//カラーコードメモ：(ライトブルー)55879A→82C6E0、(グリーン)、4A8C4F→8BF392、(ピンク)AB5FAB→F69BF8
 ////
 
-#pragma warning disable 0649    //ゲームオブジェクトがnullのままであるという警告
+#pragma warning disable 0649    //参照先がnullのままであるという警告を無視する
 
 using System.Collections;
 using System.Collections.Generic;
@@ -14,48 +13,28 @@ using UnityEngine;
 
 public class SwitchManager : MonoBehaviour
 {
-    enum SwitchType { touchSwitch, hitSwitch }
-    [SerializeField] SwitchType switchType = SwitchType.touchSwitch;
+    const float COLOR_CHANGE_TIME = 0.1f;
 
     public bool isOn = false;
+    [SerializeField] Color fromColor;
+    [SerializeField] Color toColor;
+    [SerializeField] Vector3 moveDiff;
+    [SerializeField] Light spotLight;
     private float timeElapsed;
-    private bool switched = false;
+    private bool switched = false;          //スイッチオブジェクトの変化が完了したかどうか(isOnとは異なる)
+    private Vector3 defaultPos;
 
-    [System.Serializable] [SerializeField] struct TouchSwitch           //タッチスイッチのパラメータ
+    private void Start()
     {
-        public Color fromColor;             //OFFのときの色
-        public Color toColor;               //ONのときの色
-        public float colorChangeTime;       //色が変化する時間
-        public Light spotLight;             //Spot Lightを格納しておく
+        defaultPos = transform.position;
     }
-    [SerializeField] TouchSwitch touchSwitch = new TouchSwitch { fromColor = new Color(0.853f, 0.457f, 0.858f), toColor = new Color(0.993f, 0.674f, 1.000f, 1.0f), colorChangeTime = 0.1f };
-
-    [System.Serializable] [SerializeField] struct HitSwitch             //ヒットスイッチのパラメータ
-    {
-
-    }
-    [SerializeField] HitSwitch hitSwitch = new HitSwitch { };
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.tag == "player" && !isOn)
+        if (collision.transform.tag == "player")
         {
-            //スイッチにプレイヤーが衝突したとき(スイッチ起動後は無視)
-            switch (switchType)
-            {
-                //タッチスイッチ
-                case SwitchType.touchSwitch:
-                    isOn = true;
-                    break;
-
-                //ヒットスイッチ
-                case SwitchType.hitSwitch:
-                    if (collision.gameObject.GetComponent<Rigidbody>().velocity.sqrMagnitude >= 1.0f)
-                    {
-                        isOn = true;
-                    }
-                    break;
-            }
+            //スイッチにプレイヤーが触れたとき：スイッチをONにする
+            isOn = true;
         }
     }
 
@@ -66,26 +45,17 @@ public class SwitchManager : MonoBehaviour
             //スイッチ起動後、スイッチの変化処理を行う(スイッチ変化後は無視)
             timeElapsed += Time.deltaTime;
 
-            switch (switchType)
+            float changeRate = timeElapsed / COLOR_CHANGE_TIME;
+
+            if (changeRate > 1.0f)
             {
-                //タッチスイッチ
-                case SwitchType.touchSwitch:
-                    if (timeElapsed > touchSwitch.colorChangeTime)
-                    {
-                        timeElapsed = touchSwitch.colorChangeTime;
-                        switched = true;
-                    }
-
-                    GetComponent<Renderer>().material.color = touchSwitch.fromColor + new Color (touchSwitch.toColor.r - touchSwitch.fromColor.r, 
-                        touchSwitch.toColor.g - touchSwitch.fromColor.g, touchSwitch.toColor.b - touchSwitch.fromColor.b) * timeElapsed / touchSwitch.colorChangeTime;
-                    touchSwitch.spotLight.intensity = timeElapsed / touchSwitch.colorChangeTime;
-                    break;
-
-                //ヒットスイッチ
-                case SwitchType.hitSwitch:
-
-                    break;
+                changeRate = 1.0f;
+                switched = true;
             }
+
+            GetComponent<Renderer>().material.color = fromColor + new Color(toColor.r - fromColor.r, toColor.g - fromColor.g, toColor.b - fromColor.b) * changeRate;
+            transform.position = defaultPos + transform.TransformDirection(moveDiff * changeRate);
+            spotLight.intensity = changeRate;
         }
     }
 }

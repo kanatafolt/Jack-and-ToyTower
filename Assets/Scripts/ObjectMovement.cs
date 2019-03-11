@@ -1,9 +1,13 @@
 ﻿////
 //ObjectMovement.cs
 //オブジェクトの自律的な移動・回転を制御するスクリプト
-//Translation：一定速度で並進する
-//Rotation：一定速度で回転する
-//Circular Orbit：円軌道を描いて移動する(未実装)
+//複数の挙動を同時に設定できるが、基本的に併用は想定していない
+//Inspectorの表示はEditor/ObjectMovementInspector.csで定義しているのでそちらと変更点を合わせること
+//(あとから考えるとSequenceOpen.csで使用している構造体の方が管理がしやすいように見えるが、レイアウトのために構造体を使うのは良くない？)
+//挙動一覧：
+//Translation 一定速度で並進する
+//Rotation 一定速度で回転する
+//Circular Orbit 円軌道を描いて移動する(未実装)
 ////
 
 using System.Collections;

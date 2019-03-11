@@ -68,7 +68,7 @@
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
     <Compile Include="Assets\Scripts\PlayerLookAtTracer.cs" />
-    <Compile Include="Assets\Scripts\SequenceSwitch.cs" />
+    <Compile Include="Assets\Scripts\SequenceOpen.cs" />
     <Compile Include="Assets\Scripts\SpringSimulation.cs" />
     <Compile Include="Assets\Scripts\SwitchManager.cs" />
     <None Include="Assets\ExtraAssets\Textures\wood_pattern\readme.txt" />
