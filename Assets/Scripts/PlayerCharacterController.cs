@@ -24,6 +24,7 @@ public class PlayerCharacterController : MonoBehaviour
     [SerializeField] MoveOption moveOption = MoveOption.polarCoordinates;
 
     [SerializeField] GameObject cameraRig, lookAtTracer, springObj, coverObj;
+    [SerializeField] PlayerJumpTrigger upperTrigger, lowerTrigger;
     private Rigidbody rb;
 
     private Vector3 moveDir;                    //進行方向を表す単位ベクトル
@@ -32,14 +33,13 @@ public class PlayerCharacterController : MonoBehaviour
     private float initialSpringScale;           //ジャンプキーを押下した瞬間のバネの長さを一時保存する
     private bool stopCoverAngle = false;
     private float coverCloseRate;
-    private int collidingFloorCount = 0;
     private float onePrevHeight, twoPrevHeight;
     private float distanceToTower;
     private bool allowForwardMove = true;       //前後移動入力を禁止する
 
     //デバッグ変数
-    //[SerializeField] Renderer ren;
-    //[SerializeField] Material normalMat, collisionMat;
+    [SerializeField] Renderer ren;
+    [SerializeField] Material contactingMat, flyingMat;
 
     private void Reset()
     {
@@ -47,6 +47,8 @@ public class PlayerCharacterController : MonoBehaviour
         lookAtTracer = GameObject.Find("PlayerLookAtTracer");
         springObj = GameObject.Find("SpringRig");
         coverObj = GameObject.Find("CoverRig");
+        upperTrigger = GameObject.Find("UpperJumpTrigger").GetComponent<PlayerJumpTrigger>();
+        lowerTrigger = GameObject.Find("LowerJumpTrigger").GetComponent<PlayerJumpTrigger>();
     }
 
     private void Start()
@@ -62,10 +64,14 @@ public class PlayerCharacterController : MonoBehaviour
         //移動周期を計算
         if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
 
-        //2フレーム前からy座標が変化していないならジャンプを許可する
-        if (transform.position.y == twoPrevHeight) enableJump = true;
+        //ジャンプ禁止・許可処理
+        if (upperTrigger.contacting && lowerTrigger.contacting) enableJump = true;          //ジャンプトリガーが二つとも接触していればジャンプを許可する
+        if (!upperTrigger.contacting && !lowerTrigger.contacting) enableJump = false;       //ジャンプトリガーが二つとも接触していなければジャンプを禁止する
+        if (transform.position.y == twoPrevHeight) enableJump = true;                       //2フレーム前からy座標が変化していないならジャンプを許可する
         twoPrevHeight = onePrevHeight;
         onePrevHeight = transform.position.y;
+
+        ren.material = (enableJump) ? contactingMat : flyingMat;        //デバッグ用
 
         //移動処理
         Vector3 velTemp = rb.velocity;
@@ -235,58 +241,19 @@ public class PlayerCharacterController : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        //フロアオブジェクトに触れたとき：ジャンプを許可する
-        if (collision.transform.tag == "floor")
-        {
-            collidingFloorCount++;
-            enableJump = true;
-            //ren.material = normalMat;
-        }
-    }
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    //スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(凍結中)
+    //    if (other.tag == "fixedForwardMoveTrigger")
+    //    {
+    //        allowForwardMove = false;
+    //        distanceToTower = FIXED_TOWER_DISTANCE;
+    //    }
 
-    private void OnCollisionExit(Collision collision)
-    {
-        //フロアオブジェクトから離れたとき：触れているフロアオブジェクトが0個ならジャンプを禁止する(凍結中、トリガーが離れるまではジャンプ可能に)
-        if (collision.transform.tag == "floor")
-        {
-            collidingFloorCount--;
-            //if (collidingFloorCount <= 0) enableJump = false;
-            //if (collidingFloorCount <= 0) ren.material = collisionMat;
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        //ジャンプトリガーがフロアオブジェクトに触れたとき：OnTriggerExitのフロアカウントを打ち消す
-        if (other.tag == "floor")
-        {
-            collidingFloorCount++;
-        }
-
-        ////スタートトリガーに触れたとき：前後移動を禁止し、タワーとの距離を固定する(凍結中)
-        //if (other.tag == "fixedForwardMoveTrigger")
-        //{
-        //    allowForwardMove = false;
-        //    distanceToTower = FIXED_TOWER_DISTANCE;
-        //}
-
-        ////ボトムトリガーに触れたとき：前後移動を許可する(凍結中)
-        //if (other.tag == "allowForwardMoveTrigger")
-        //{
-        //    allowForwardMove = true;
-        //}
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        //ジャンプトリガーがフロアオブジェクトから離れたとき：触れているフロアオブジェクトが0個ならジャンプを禁止する
-        if (other.tag == "floor")
-        {
-            collidingFloorCount--;
-            if (collidingFloorCount <= 0) enableJump = false;
-            //if (collidingFloorCount <= 0) ren.material = collisionMat;
-        }
-    }
+    //    //ボトムトリガーに触れたとき：前後移動を許可する(凍結中)
+    //    if (other.tag == "allowForwardMoveTrigger")
+    //    {
+    //        allowForwardMove = true;
+    //    }
+    //}
 }

@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
+    <Compile Include="Assets\Scripts\PlayerJumpTrigger.cs" />
     <Compile Include="Assets\Scripts\PlayerLookAtTracer.cs" />
     <Compile Include="Assets\Scripts\SequenceOperator.cs" />
     <Compile Include="Assets\Scripts\SpringSimulation.cs" />
