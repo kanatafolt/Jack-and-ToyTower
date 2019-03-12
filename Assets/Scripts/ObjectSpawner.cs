@@ -3,7 +3,7 @@
 //指定条件でプレハブのクローンを生成するスクリプト
 ////
 
-#pragma warning disable 0649    //参照先がnullのままであるという警告を無視する
+#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
 
 using System.Collections;
 using System.Collections.Generic;

@@ -1,0 +1,84 @@
+﻿////
+//SequenceOperator.cs
+//指定したスイッチがONになることで、紐付いたステージオブジェクトが順番に展開されるギミックスクリプト
+//各オブジェクトを移動・回転させながら展開することができるが、併用は想定していないため注意
+////
+
+#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SequenceOperator : MonoBehaviour
+{
+    [SerializeField] SwitchManager switchObj;           //このスイッチがONになるとシークエンスが展開開始
+    [SerializeField] float openTime = 0.4f;             //展開時間
+    [SerializeField] float openInterval = 0.2f;         //展開間隔
+
+    [System.Serializable] [SerializeField] struct SequenceObjects {
+        public Transform trans;                                 //展開対象オブジェクト
+        public Vector3 moveDiff;                                //移動量
+        public Vector3 rotDiff;                                 //回転量
+        [HideInInspector] public Vector3 defaultPos;            //元々のpositionを保持
+        [HideInInspector] public Quaternion defaultRot;         //元々のrotationを保持
+        [HideInInspector] public Vector3 rotPivot;              //rotDiffから回転軸を分離
+        [HideInInspector] public float rotAngle;                //rotDiffから回転角度を分離
+    }
+    [SerializeField] SequenceObjects[] seq;
+
+    private float timeElapsed, prevTimeElapsed;
+    private float finishTime;
+
+    private void Reset()
+    {
+        switchObj = transform.Find("Switch").gameObject.GetComponent<SwitchManager>();
+    }
+
+    private void Start()
+    {
+        finishTime = openInterval * (seq.Length - 1) + openTime;
+
+        //ステージ設計時には展開後の状態で置かれているため、最初にシークエンスを逆向きに行い、初期状態を保存する
+        for (int i = 0; i < seq.Length; i++)
+        {
+            if (seq[i].trans != null)
+            {
+                seq[i].rotPivot = seq[i].rotDiff.normalized;
+                seq[i].rotAngle = seq[i].rotDiff.magnitude;
+                seq[i].trans.position = seq[i].trans.position + seq[i].trans.TransformDirection(-seq[i].moveDiff);
+                seq[i].trans.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].trans.rotation;
+                seq[i].defaultPos = seq[i].trans.position;
+                seq[i].defaultRot = seq[i].trans.rotation;
+            }
+        }
+    }
+
+    private void Update()
+    {
+        prevTimeElapsed = timeElapsed;
+
+        if (switchObj.isOn && timeElapsed < finishTime)    timeElapsed += Time.deltaTime;
+        if (!switchObj.isOn && timeElapsed > 0.0f)         timeElapsed -= Time.deltaTime;
+
+        if (timeElapsed != prevTimeElapsed)
+        {
+            //各ステージオブジェクトを時間差で展開していく
+            for (int i = 0; i < seq.Length; i++)
+            {
+                if (seq[i].trans != null)
+                {
+                    float diffRate = (timeElapsed - openInterval * i) / openTime;
+                        if (diffRate > 1.0f) diffRate = 1.0f;
+                        if (diffRate < 0.0f) diffRate = 0.0f;
+
+                    seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
+                    seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
+                }
+            }
+
+            if (timeElapsed >= finishTime) timeElapsed = finishTime;
+            if (timeElapsed <= 0.0f) timeElapsed = 0.0f;
+        }
+    }
+}

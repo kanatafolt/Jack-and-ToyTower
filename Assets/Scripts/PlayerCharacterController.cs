@@ -248,11 +248,11 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        //フロアオブジェクトから離れたとき：触れているフロアオブジェクトが0個ならジャンプを禁止する
+        //フロアオブジェクトから離れたとき：触れているフロアオブジェクトが0個ならジャンプを禁止する(凍結中、トリガーが離れるまではジャンプ可能に)
         if (collision.transform.tag == "floor")
         {
             collidingFloorCount--;
-            if (collidingFloorCount <= 0) enableJump = false;
+            //if (collidingFloorCount <= 0) enableJump = false;
             //if (collidingFloorCount <= 0) ren.material = collisionMat;
         }
     }
