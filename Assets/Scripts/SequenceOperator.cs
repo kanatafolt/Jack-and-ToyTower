@@ -12,6 +12,8 @@ using UnityEngine;
 
 public class SequenceOperator : MonoBehaviour
 {
+    [SerializeField] bool forceOn = false;              //デバッグ用変数：シークエンスを強制的に展開する()
+
     [SerializeField] SwitchManager switchObj;           //このスイッチがONになるとシークエンスが展開開始
     [SerializeField] float openTime = 0.4f;             //展開時間
     [SerializeField] float openInterval = 0.2f;         //展開間隔
@@ -33,6 +35,13 @@ public class SequenceOperator : MonoBehaviour
     private void Reset()
     {
         switchObj = transform.Find("Switch").gameObject.GetComponent<SwitchManager>();
+    }
+
+    private void OnDrawGizmos()
+    {
+        //デバッグ用：シーン編集時、シークエンス対象のオブジェクトに目印を表示する
+        Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.3f);
+        for (int i = 0; i < seq.Length; i++) if (seq[i].trans != null) Gizmos.DrawSphere(seq[i].trans.position + seq[i].trans.TransformDirection(Vector3.forward * -7.0f + Vector3.up * 0.25f), 0.45f);
     }
 
     private void Start()
@@ -58,8 +67,8 @@ public class SequenceOperator : MonoBehaviour
     {
         prevTimeElapsed = timeElapsed;
 
-        if (switchObj.isOn && timeElapsed < finishTime)    timeElapsed += Time.deltaTime;
-        if (!switchObj.isOn && timeElapsed > 0.0f)         timeElapsed -= Time.deltaTime;
+        if ((switchObj.isOn || forceOn) && timeElapsed < finishTime)    timeElapsed += Time.deltaTime;
+        if (!switchObj.isOn && !forceOn && timeElapsed > 0.0f)         timeElapsed -= Time.deltaTime;
 
         if (timeElapsed != prevTimeElapsed)
         {

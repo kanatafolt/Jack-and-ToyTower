@@ -20,6 +20,7 @@ public class SpringSimulation : MonoBehaviour
     private Vector3 originPosition, originScale;
     private Vector3 originAngleX, originAngleY, originAngleZ;
     private float velocity = 0.0f;
+    private Vector3 initialScale;                           //バネの縮み幅が強制的に縮められる場合、本来のoriginScaleを保存しておくための変数
 
     public bool enableSpring = true;
     [SerializeField] float accRate = 0.2f;
@@ -32,7 +33,7 @@ public class SpringSimulation : MonoBehaviour
         if (!coordinateParent) coordinateParent = transform;
 
         originPosition = transform.localPosition;
-        originScale = transform.localScale;
+        originScale = initialScale = transform.localScale;
         originAngleX = coordinateParent.InverseTransformDirection(transform.right);
         originAngleY = coordinateParent.InverseTransformDirection(transform.up);
         originAngleZ = coordinateParent.InverseTransformDirection(transform.forward);
@@ -104,5 +105,11 @@ public class SpringSimulation : MonoBehaviour
     {
         impulsePower = pow;
         impulseTime = t;
+    }
+
+    //強制的にバネのoriginScaleを変更する
+    public void ForceShrink (float shrinkLength)
+    {
+        originScale += initialScale * shrinkLength;
     }
 }
