@@ -119,7 +119,7 @@ public class PlayerCharacterController : MonoBehaviour
                 if (allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * FORWARD_MOVE_DECREASE);               //タワー中心方向(z)に速度減衰をかける
                 if (!allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, 0.0f);                                           //allowForwardMoveがfalseならタワー中心方向(z)を0に
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
-                if (enableJump) velTemp += transform.TransformDirection(Vector3.up * 1.0f);
+                if (enableJump) velTemp += transform.TransformDirection(Vector3.up * 1.0f);                                         //ジャンプ可能なら小ジャンプを行う
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
                 coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.5f, 0.1f);
             }
