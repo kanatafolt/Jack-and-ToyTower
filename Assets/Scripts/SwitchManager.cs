@@ -10,31 +10,27 @@ using UnityEngine;
 
 public class SwitchManager : MonoBehaviour
 {
-    const float CHANGE_TIME = 0.1f;                 //スイッチの変化にかかる時間
+    const float CHANGE_TIME = 0.1f;                     //スイッチの変化にかかる時間
 
     [HideInInspector] public bool isOn = false;
-    [SerializeField] float timeLimit = 0.0f;        //スイッチがOFFになるまでの制限時間　0ならOFFにならない
-    [SerializeField] Color toColor = Color.white;
-    [SerializeField] Vector3 moveDiff = Vector3.zero;
-    [SerializeField] Light spotLight;
+    [SerializeField] float timeLimit = 0.0f;            //スイッチがOFFになるまでの制限時間　0ならOFFにならない
+    [SerializeField] float moveDiff = 0.1f;             //スイッチの沈む幅　0にすることでマテリアルだけが変化するスイッチも作成可能
+    private bool switched = false;                      //スイッチオブジェクトの変化が完了したかどうか(isOnとは異なる)
+    private Renderer ren;
+    private Vector3 initialPosition, toPosition, currentPosition;
+    private Color initialEmission, toEmission, currentEmission;
     private float timeElapsed;
-    private bool switched = false;                  //スイッチオブジェクトの変化が完了したかどうか(isOnとは異なる)
-    private Color currentColor, initialColor;
-    private Vector3 currentPos, initialPos, toPos;
-    private float currentIntensity, initialIntensity, toIntensity;
-
-    private void Reset()
-    {
-        spotLight = transform.parent.Find("Spot Light").gameObject.GetComponent<Light>();
-    }
 
     private void Start()
     {
-        initialColor = currentColor = GetComponent<Renderer>().material.color;
-        initialPos = currentPos = transform.position;
-        toPos = initialPos + transform.TransformDirection(moveDiff);
-        initialIntensity = currentIntensity = spotLight.intensity;
-        toIntensity = 1.0f;
+        ren = GetComponent<Renderer>();
+        GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
+        initialPosition = transform.position;
+        toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
+        currentPosition = initialPosition;
+        initialEmission = Color.black;
+        toEmission = GetComponent<Renderer>().material.color;
+        currentEmission = toEmission;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -44,9 +40,8 @@ public class SwitchManager : MonoBehaviour
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
             isOn = true;
             switched = false;
-            currentColor = GetComponent<Renderer>().material.color;
-            currentPos = transform.position;
-            currentIntensity = spotLight.intensity;
+            currentPosition = transform.position;
+            currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
         }
     }
 
@@ -57,9 +52,8 @@ public class SwitchManager : MonoBehaviour
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
             isOn = true;
             switched = false;
-            currentColor = GetComponent<Renderer>().material.color;
-            currentPos = transform.position;
-            currentIntensity = spotLight.intensity;
+            currentPosition = transform.position;
+            currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
         }
     }
 
@@ -83,22 +77,20 @@ public class SwitchManager : MonoBehaviour
                         switched = true;
                     }
 
-                    GetComponent<Renderer>().material.color = new Color(currentColor.r + (toColor.r - currentColor.r) * changeRate, 
-                        currentColor.g + (toColor.g - currentColor.g) * changeRate, currentColor.b + (toColor.b - currentColor.b) * changeRate);
-                    transform.position = currentPos + (toPos - currentPos) * changeRate;
-                    spotLight.intensity = currentIntensity + (toIntensity - currentIntensity) * changeRate;
+                    transform.position = currentPosition + (toPosition - currentPosition) * changeRate;
+                    ren.material.SetColor("_EmissionColor", new Color(currentEmission.r + (toEmission.r - currentEmission.r) * changeRate,
+                        currentEmission.g + (toEmission.g - currentEmission.g) * changeRate, currentEmission.b + (toEmission.b - currentEmission.b) * changeRate));
                 }
 
             }
             else if (timeLimit > 0.0f && timeElapsed >= timeLimit)
             {
                 //スイッチがONのとき、制限時間が設定されており、制限時間を超えていたら：スイッチをOFFにする
-                isOn = false;
-                currentColor = GetComponent<Renderer>().material.color;
-                currentPos = transform.position;
-                currentIntensity = spotLight.intensity;
                 timeElapsed = CHANGE_TIME;
+                isOn = false;
                 switched = true;
+                currentPosition = transform.position;
+                currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
             }
         }
 
@@ -106,6 +98,7 @@ public class SwitchManager : MonoBehaviour
         {
             //スイッチがOFFのとき、制限時間が設定されており、スイッチの逆変化が完了していないとき：スイッチの逆変化処理を行う
             timeElapsed -= Time.deltaTime;
+
             if (timeElapsed <= 0.0f)
             {
                 timeElapsed = 0.0f;
@@ -114,10 +107,9 @@ public class SwitchManager : MonoBehaviour
 
             float changeRate = timeElapsed / CHANGE_TIME;
 
-            GetComponent<Renderer>().material.color = new Color(initialColor.r + (currentColor.r - initialColor.r) * changeRate,
-                initialColor.g + (currentColor.g - initialColor.g) * changeRate, initialColor.b + (currentColor.b - initialColor.b) * changeRate);
-            transform.position = initialPos + (currentPos - initialPos) * changeRate;
-            spotLight.intensity = initialIntensity + (currentIntensity - initialIntensity) * changeRate;
+            transform.position = initialPosition + (currentPosition - initialPosition) * changeRate;
+            ren.material.SetColor("_EmissionColor", new Color(initialEmission.r + (currentEmission.r - initialEmission.r) * changeRate,
+                initialEmission.g + (currentEmission.g - initialEmission.g) * changeRate, initialEmission.b + (currentEmission.b - initialEmission.b) * changeRate));
         }
     }
 }

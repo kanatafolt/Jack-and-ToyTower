@@ -71,7 +71,7 @@ public class PlayerCharacterController : MonoBehaviour
         twoPrevHeight = onePrevHeight;
         onePrevHeight = transform.position.y;
 
-        ren.material = (enableJump) ? contactingMat : flyingMat;        //デバッグ用
+        //ren.material = (enableJump) ? contactingMat : flyingMat;        //デバッグ用
 
         //移動処理
         Vector3 velTemp = rb.velocity;
