@@ -73,7 +73,10 @@
     <Compile Include="Assets\Scripts\SpringSimulation.cs" />
     <Compile Include="Assets\Scripts\SwitchManager.cs" />
     <None Include="Assets\ExtraAssets\Textures\wood_pattern\readme.txt" />
+    <None Include="Assets\ExtraAssets\Standard Assets\Effects\Projectors\Guidelines.txt" />
     <None Include="Assets\ExtraAssets\Textures\wood-patterns-PIXEDEN\license-README-FIRST.txt" />
+    <None Include="Assets\ExtraAssets\Standard Assets\Effects\Projectors\Shaders\ProjectorLight.shader" />
+    <None Include="Assets\ExtraAssets\Standard Assets\Effects\Projectors\Shaders\ProjectorMultiply.shader" />
     <None Include="Assets\ExtraAssets\Textures\Paper-patterns-vol02-PIXEDEN\license-README-FIRST.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>F:/FoltDocument/Develop/GitHub/Jack-and-ToyTower/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
