@@ -65,6 +65,7 @@
     <Compile Include="Assets\Scripts\CheckPointRespawn.cs" />
     <Compile Include="Assets\Scripts\DebugPlayerSpawner.cs" />
     <Compile Include="Assets\Scripts\InBorderArea.cs" />
+    <Compile Include="Assets\Scripts\MainGameManager.cs" />
     <Compile Include="Assets\Scripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />

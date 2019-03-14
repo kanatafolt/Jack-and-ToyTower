@@ -13,7 +13,7 @@ public class PlayerCharacterController : MonoBehaviour
     const float MOVE_LENGTH = 3.0f;             //移動量倍率
     const float FORWARD_MOVE_DECREASE = 0.7f;   //タワー奥行き方向への移動量減衰倍率
     const float MAX_JUMP_CHARGE = 0.5f;         //ジャンプの最大溜め時間
-    const float MIN_JUMP_HEIGHT = 4.0f;         //最低ジャンプ力倍率
+    const float MIN_JUMP_HEIGHT = 3.75f;        //最低ジャンプ力倍率
     const float MAX_JUMP_HEIGHT = 6.0f;         //最大ジャンプ力倍率
     const float MIN_SPRING_SCALE = 0.1f;        //ばねの最小縮み長さ
     const float MOVE_FREGQUENCY = 0.2f;         //移動発生周期
@@ -27,15 +27,16 @@ public class PlayerCharacterController : MonoBehaviour
     [SerializeField] PlayerJumpTrigger upperTrigger, lowerTrigger;
     private Rigidbody rb;
 
-    private Vector3 moveDir;                    //進行方向を表す単位ベクトル
+    private Vector3 moveDir;                        //進行方向を表す単位ベクトル
     private bool enableJump = true;
     private float jumpCharge, moveCharge;
-    private float initialSpringScale;           //ジャンプキーを押下した瞬間のバネの長さを一時保存する
+    private float initialSpringScale;               //ジャンプキーを押下した瞬間のバネの長さを一時保存する
     private bool stopCoverAngle = false;
     private float coverCloseRate;
     private float onePrevHeight, twoPrevHeight;
     private float distanceToTower;
-    private bool allowForwardMove = true;       //前後移動入力を禁止する
+    private bool allowForwardMove = true;           //前後移動入力を禁止する
+    private bool forceStopX_Z_Velocity = false;     //物理演算による意図しない滑りを防止する(trueになったとき、一度だけvelTempのx,zを0にする)
 
     //デバッグ変数
     [SerializeField] Renderer ren;
@@ -111,8 +112,8 @@ public class PlayerCharacterController : MonoBehaviour
 
                 //一回の小ジャンプ移動が発生
                 Vector3 moveDirTemp = Vector3.zero;
-                if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(moveDirForwardAngle), 0.0f, Mathf.Cos(moveDirForwardAngle)) * Input.GetAxis("Vertical");
-                if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(moveDirForwardAngle), 0.0f, -Mathf.Sin(moveDirForwardAngle)) * Input.GetAxis("Horizontal");
+                if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(moveDirForwardAngle), 0.0f, Mathf.Cos(moveDirForwardAngle)) * Input.GetAxisRaw("Vertical");
+                if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(moveDirForwardAngle), 0.0f, -Mathf.Sin(moveDirForwardAngle)) * Input.GetAxisRaw("Horizontal");
                 moveDir = moveDirTemp.normalized;
                 velTemp = new Vector3(moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);                             //移動量倍率をかける
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
@@ -132,7 +133,7 @@ public class PlayerCharacterController : MonoBehaviour
             velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * 0.0f);                                                      //タワー中心方向(z)の速度をゼロにする
             velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
 
-            if (allowForwardMove) distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
+            if (allowForwardMove) distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);      //前後移動を止めたタイミングでタワーへの距離を保存する
         }
 
         if (Input.GetButtonUp("Horizontal"))
@@ -148,6 +149,11 @@ public class PlayerCharacterController : MonoBehaviour
             //移動キーを完全に離したとき：キャラクター向きの自動回転を中断する
             velTemp = new Vector3(0.0f, velTemp.y, 0.0f);
             moveDir = transform.forward;
+        }
+
+        if (Input.GetButtonDown("Horizontal"))
+        {
+            if (allowForwardMove) distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);      //左右移動を始めたタイミングでタワーへの距離を保存する
         }
 
         if (Input.GetButton("Horizontal") && !Input.GetButton("Vertical"))
@@ -219,6 +225,13 @@ public class PlayerCharacterController : MonoBehaviour
             enableJump = false;
         }
 
+        //フロアオブジェクトに触れたときに移動入力を行っていなかった場合、一度だけ強制的にx,z方向への移動を0にする(物理演算による滑り防止)
+        if (forceStopX_Z_Velocity)
+        {
+            velTemp = new Vector3(0.0f, velTemp.y, 0.0f);
+            forceStopX_Z_Velocity = false;
+        }
+
         //速度を確定
         rb.velocity = velTemp;
     }
@@ -238,6 +251,15 @@ public class PlayerCharacterController : MonoBehaviour
         else
         {
             if(moveDir != Vector3.zero) transform.forward = moveDir;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        //フロアオブジェクトに触れた瞬間、移動入力を行っていなかった場合：滑り防止フラグをtrueにする
+        if (collision.gameObject.tag == "floor" && !Input.GetButton("Vertical") && !Input.GetButton("Horizontal"))
+        {
+            forceStopX_Z_Velocity = true;
         }
     }
 
