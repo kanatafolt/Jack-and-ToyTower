@@ -2,6 +2,8 @@
 //SequenceOperator.cs
 //指定したスイッチがONになることで、紐付いたステージオブジェクトが順番に展開されるギミックスクリプト
 //各オブジェクトを移動・回転させながら展開することができるが、併用は想定していないため注意
+//シークエンス対象のステージオブジェクトを配列に設定したら、そのオブジェクトが「格納位置から展開位置までの移動・回転」量を設定する
+//その上で、対象のステージオブジェクトは「展開位置」に設置しておく(ゲームスタート時に自動で格納される)
 ////
 
 #pragma warning disable 0649    //変数が初期化されていないという警告を無視する
@@ -12,7 +14,7 @@ using UnityEngine;
 
 public class SequenceOperator : MonoBehaviour
 {
-    [SerializeField] bool forceOn = false;              //デバッグ用変数：シークエンスを強制的に展開する()
+    [SerializeField] bool forceOn = false;              //デバッグ用変数：シークエンスを強制的に展開する
 
     [SerializeField] SwitchManager switchObj;           //このスイッチがONになるとシークエンスが展開開始
     [SerializeField] float openTime = 0.4f;             //展開時間
