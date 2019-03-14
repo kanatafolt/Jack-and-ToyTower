@@ -1,6 +1,7 @@
 ﻿////
 //PlayerCharacterController.cs
 //プレイヤーキャラクターの移動やジャンプ入力を扱うスクリプト
+//物理演算の更新はFixedUpdateの方が良さそうだが、
 ////
 
 using System.Collections;
@@ -37,6 +38,7 @@ public class PlayerCharacterController : MonoBehaviour
     private float distanceToTower;
     private bool allowForwardMove = true;           //前後移動入力を禁止する
     private bool forceStopX_Z_Velocity = false;     //物理演算による意図しない滑りを防止する(trueになったとき、一度だけvelTempのx,zを0にする)
+    private float disableJumpDelay = 0.0f;          //ジャンプ直後にジャンプトリガーの判定によりup方向速度が増加することを防ぐため、ジャンプ禁止時間に余裕をもたせる
 
     //デバッグ変数
     [SerializeField] Renderer ren;
@@ -62,13 +64,13 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void Update()
     {
-        //移動周期を計算
-        if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;
+        if (moveCharge < MOVE_FREGQUENCY) moveCharge += Time.deltaTime;         //移動周期を計算
+        if (disableJumpDelay > 0.0f) disableJumpDelay -= Time.deltaTime;        //ジャンプ禁止予備時間を計算
 
         //ジャンプ禁止・許可処理
-        if (upperTrigger.contacting && lowerTrigger.contacting) enableJump = true;          //ジャンプトリガーが二つとも接触していればジャンプを許可する
-        if (!upperTrigger.contacting && !lowerTrigger.contacting) enableJump = false;       //ジャンプトリガーが二つとも接触していなければジャンプを禁止する
-        if (transform.position.y == twoPrevHeight) enableJump = true;                       //2フレーム前からy座標が変化していないならジャンプを許可する
+        if (disableJumpDelay <= 0.0f && upperTrigger.contacting && lowerTrigger.contacting) enableJump = true;      //ジャンプトリガーが二つとも接触していればジャンプを許可する(ジャンプ後一定時間無視)
+        if (!upperTrigger.contacting && !lowerTrigger.contacting) enableJump = false;                               //ジャンプトリガーが二つとも接触していなければジャンプを禁止する
+        if (transform.position.y == twoPrevHeight) enableJump = true;                                               //2フレーム前からy座標が変化していないならジャンプを許可する
         twoPrevHeight = onePrevHeight;
         onePrevHeight = transform.position.y;
 
@@ -115,7 +117,7 @@ public class PlayerCharacterController : MonoBehaviour
                 if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(moveDirForwardAngle), 0.0f, Mathf.Cos(moveDirForwardAngle)) * Input.GetAxisRaw("Vertical");
                 if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(moveDirForwardAngle), 0.0f, -Mathf.Sin(moveDirForwardAngle)) * Input.GetAxisRaw("Horizontal");
                 moveDir = moveDirTemp.normalized;
-                velTemp = new Vector3(moveDir.x * MOVE_LENGTH, rb.velocity.y, moveDir.z * MOVE_LENGTH);                             //移動量倍率をかける
+                velTemp = new Vector3(moveDir.x * MOVE_LENGTH, velTemp.y, moveDir.z * MOVE_LENGTH);                                 //移動量倍率をかける
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
                 if (allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * FORWARD_MOVE_DECREASE);               //タワー中心方向(z)に速度減衰をかける
                 if (!allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, 0.0f);                                           //allowForwardMoveがfalseならタワー中心方向(z)を0に
@@ -218,11 +220,12 @@ public class PlayerCharacterController : MonoBehaviour
                 //velTemp = new Vector3(velTemp.x, jumpCharge >= MAX_JUMP_CHARGE ? MAX_JUMP_HEIGHT : MIN_JUMP_HEIGHT, velTemp.z);                       //案2：最小or最大の2段階変化(三項演算子)
                 velTemp = new Vector3(velTemp.x, MIN_JUMP_HEIGHT + jumpCharge / MAX_JUMP_CHARGE * (MAX_JUMP_HEIGHT - MIN_JUMP_HEIGHT), velTemp.z);      //案3：最小～最大まで溜めに比例する
 
+                enableJump = false;
+                disableJumpDelay = 0.1f;        //ジャンプ直後にジャンプトリガー(プレイヤーキャラクター下部)が床に触れているとジャンプが許可されてしまうため、それを防止する猶予時間を設定
             }
 
             jumpCharge = 0.0f;
             stopCoverAngle = false;
-            enableJump = false;
         }
 
         //フロアオブジェクトに触れたときに移動入力を行っていなかった場合、一度だけ強制的にx,z方向への移動を0にする(物理演算による滑り防止)
@@ -234,11 +237,10 @@ public class PlayerCharacterController : MonoBehaviour
 
         //速度を確定
         rb.velocity = velTemp;
-    }
 
-    private void FixedUpdate()
-    {
-        //キャラクターが進行方向をゆっくりと向く
+        if (rb.velocity.y > 6.0f) Debug.Log("!ERROR! TOO HIGHER JUMP! current velocity:" + rb.velocity);            //デバッグ用エラー検出：プレイヤーの速度が想定ジャンプ速度を超えている
+
+        //キャラクターが進行方向をゆっくりと向く処理
         float rotDiff = Vector3.Angle(transform.forward, moveDir);
 
         if (rotDiff >= 0.1f)
@@ -250,7 +252,7 @@ public class PlayerCharacterController : MonoBehaviour
         }
         else
         {
-            if(moveDir != Vector3.zero) transform.forward = moveDir;
+            if (moveDir != Vector3.zero) transform.forward = moveDir;
         }
     }
 

@@ -62,7 +62,6 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CameraRigRotater.cs" />
     <Compile Include="Assets\Scripts\CenterOfMass.cs" />
-    <Compile Include="Assets\Scripts\CheckPointRespawn.cs" />
     <Compile Include="Assets\Scripts\DebugPlayerSpawner.cs" />
     <Compile Include="Assets\Scripts\InBorderArea.cs" />
     <Compile Include="Assets\Scripts\MainGameManager.cs" />
