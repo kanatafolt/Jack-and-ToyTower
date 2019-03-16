@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2350327375496206172}
   - component: {fileID: 2350327375496206171}
   - component: {fileID: 2350327375496206170}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: Stand
   m_TagString: floor
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2350327375807994056}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: TouchSwitch(Wall)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 2350327376864035566}
   - component: {fileID: 2350327376864035565}
   - component: {fileID: 2350327376864035568}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: Switch
   m_TagString: floor
   m_Icon: {fileID: 0}
@@ -238,7 +238,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3121517626533813488}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: SwitchRig
   m_TagString: Untagged
   m_Icon: {fileID: 0}

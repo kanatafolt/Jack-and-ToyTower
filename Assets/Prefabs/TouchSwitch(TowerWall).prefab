@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3579232713701412246}
   - component: {fileID: 3579232713701412245}
   - component: {fileID: 3579232713701412232}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: Switch
   m_TagString: floor
   m_Icon: {fileID: 0}
@@ -116,7 +116,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3579232714757461936}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: TouchSwitch(TowerWall)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ GameObject:
   - component: {fileID: 3579232715052537892}
   - component: {fileID: 3579232715052537891}
   - component: {fileID: 3579232715052537890}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: Stand
   m_TagString: floor
   m_Icon: {fileID: 0}

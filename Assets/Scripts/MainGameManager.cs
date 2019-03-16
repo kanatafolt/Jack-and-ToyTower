@@ -10,11 +10,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class MainGameManager : MonoBehaviour
 {
-    public float score = 0.0f;
+    private float score = 0.0f;
+    private Text scoreText;
+
+    private void Start()
+    {
+        scoreText = GameObject.Find("ScoreNumText").GetComponent<Text>();
+    }
 
     private void Update()
     {
@@ -27,6 +34,12 @@ public class MainGameManager : MonoBehaviour
 
     private void OnGUI()
     {
-        
+        scoreText.text = score.ToString();
+    }
+
+    public void GetScore(float s)
+    {
+        //スコアを加算し、スコアUIの演出を行う
+        score += s;
     }
 }
