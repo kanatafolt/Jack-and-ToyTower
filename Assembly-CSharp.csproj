@@ -63,12 +63,12 @@
     <Compile Include="Assets\Scripts\CameraRigRotater.cs" />
     <Compile Include="Assets\Scripts\CenterOfMass.cs" />
     <Compile Include="Assets\Scripts\DebugPlayerSpawner.cs" />
+    <Compile Include="Assets\Scripts\GetScoreObject.cs" />
     <Compile Include="Assets\Scripts\InBorderArea.cs" />
     <Compile Include="Assets\Scripts\MainGameManager.cs" />
     <Compile Include="Assets\Scripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
-    <Compile Include="Assets\Scripts\PlayerHeadHitting.cs" />
     <Compile Include="Assets\Scripts\PlayerJumpTrigger.cs" />
     <Compile Include="Assets\Scripts\PlayerLookAtTracer.cs" />
     <Compile Include="Assets\Scripts\PlayerShadowRaycast.cs" />
