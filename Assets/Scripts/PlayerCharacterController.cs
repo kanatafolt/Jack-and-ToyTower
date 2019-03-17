@@ -40,9 +40,12 @@ public class PlayerCharacterController : MonoBehaviour
     private bool forceStopX_Z_Velocity = false;     //物理演算による意図しない滑りを防止する(trueになったとき、一度だけvelTempのx,zを0にする)
     private float disableJumpDelay = 0.0f;          //ジャンプ直後にジャンプトリガーの判定によりup方向速度が増加することを防ぐため、ジャンプ禁止時間に余裕をもたせる
 
-    //デバッグ変数
-    [SerializeField] Renderer ren;
-    [SerializeField] Material contactingMat, flyingMat;
+    private AudioSource audioSource;
+    [SerializeField] AudioClip walkSE, jumpSE;
+
+    ////デバッグ変数
+    //[SerializeField] Renderer ren;
+    //[SerializeField] Material contactingMat, flyingMat;
 
     private void Reset()
     {
