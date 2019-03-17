@@ -18,10 +18,13 @@ public class GetScoreObject : MonoBehaviour
     private bool absorbing = false;
     private float elapsedTime = 0.0f;
 
+    private AudioManager audioManager;
+
     private void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         playerCenter = GameObject.Find("PlayerCenter").transform;
+        audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     private void Update()
@@ -44,6 +47,11 @@ public class GetScoreObject : MonoBehaviour
             if ((playerCenter.position - transform.position).magnitude <= 0.1f)
             {
                 gameManager.GetScore(score);
+
+                //スコア獲得音
+                AudioManager.SEData seData = audioManager.getStarSE;
+                if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, transform.position, seData.volume);
+
                 Destroy(gameObject);
             }
         }

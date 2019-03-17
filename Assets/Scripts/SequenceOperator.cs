@@ -28,11 +28,14 @@ public class SequenceOperator : MonoBehaviour
         [HideInInspector] public Quaternion defaultRot;         //元々のrotationを保持
         [HideInInspector] public Vector3 rotPivot;              //rotDiffから回転軸を分離
         [HideInInspector] public float rotAngle;                //rotDiffから回転角度を分離
+        [HideInInspector] public bool sequenced;                //シークエンス完了時のイベントを管理する
     }
     [SerializeField] SequenceObjects[] seq;
 
     private float timeElapsed, prevTimeElapsed;
     private float finishTime;
+
+    private AudioManager audioManager;
 
     private void Reset()
     {
@@ -48,6 +51,8 @@ public class SequenceOperator : MonoBehaviour
 
     private void Start()
     {
+        audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
+
         finishTime = openInterval * (seq.Length - 1) + openTime;
 
         //ステージ設計時には展開後の状態で置かれているため、最初にシークエンスを逆向きに行い、初期状態を保存する
@@ -85,6 +90,17 @@ public class SequenceOperator : MonoBehaviour
 
                     seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
                     seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
+
+                    if (diffRate == 1.0f && !seq[i].sequenced)
+                    {
+                        seq[i].sequenced = true;
+
+                        //シークエンス完了音を鳴らす
+                        AudioManager.SEData seData = audioManager.sequenceFinishSE;
+                        if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, seq[i].trans.position, seData.volume);
+                    }
+
+                    if (diffRate > 0.0f && diffRate < 1.0f) seq[i].sequenced = false;
                 }
             }
 

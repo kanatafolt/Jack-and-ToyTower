@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class SwitchManager : MonoBehaviour
 {
     const float CHANGE_TIME = 0.1f;                     //スイッチの変化にかかる時間
@@ -21,10 +22,15 @@ public class SwitchManager : MonoBehaviour
     private Color initialEmission, toEmission, currentEmission;
     private float timeElapsed;
 
+    private AudioManager audioManager;
+    private AudioSource audioSource;
+
     private void Start()
     {
         ren = GetComponent<Renderer>();
         GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
+        audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
+        audioSource = GetComponent<AudioSource>();
         initialPosition = transform.position;
         toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
         currentPosition = initialPosition;
@@ -42,6 +48,12 @@ public class SwitchManager : MonoBehaviour
             switched = false;
             currentPosition = transform.position;
             currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
+
+            //スイッチがONになる音
+            AudioManager.SEData seData = audioManager.switchOnSE;
+            audioSource.volume = seData.volume;
+            audioSource.pitch = seData.pitch;
+            if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
         }
     }
 
@@ -54,6 +66,12 @@ public class SwitchManager : MonoBehaviour
             switched = false;
             currentPosition = transform.position;
             currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
+
+            //スイッチがONになる音
+            AudioManager.SEData seData = audioManager.switchOnSE;
+            audioSource.volume = seData.volume;
+            audioSource.pitch = seData.pitch;
+            if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
         }
     }
 

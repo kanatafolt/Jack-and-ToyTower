@@ -8,7 +8,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
+
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(AudioSource))]
 public class PlayerCharacterController : MonoBehaviour
 {
     const float MOVE_LENGTH = 3.0f;             //移動量倍率
@@ -40,8 +43,9 @@ public class PlayerCharacterController : MonoBehaviour
     private bool forceStopX_Z_Velocity = false;     //物理演算による意図しない滑りを防止する(trueになったとき、一度だけvelTempのx,zを0にする)
     private float disableJumpDelay = 0.0f;          //ジャンプ直後にジャンプトリガーの判定によりup方向速度が増加することを防ぐため、ジャンプ禁止時間に余裕をもたせる
 
-    private AudioSource audioSource;
-    [SerializeField] AudioClip walkSE, jumpSE;
+    private AudioManager audioManager;
+    [SerializeField] AudioSource audioSource1, audioSource2, audioSource3;
+    private bool prevEnableJump = true;
 
     ////デバッグ変数
     //[SerializeField] Renderer ren;
@@ -63,6 +67,7 @@ public class PlayerCharacterController : MonoBehaviour
         moveDir = transform.forward;
         onePrevHeight = twoPrevHeight = transform.position.y;
         distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
+        audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
     }
 
     private void Update()
@@ -73,9 +78,20 @@ public class PlayerCharacterController : MonoBehaviour
         //ジャンプ禁止・許可処理
         if (disableJumpDelay <= 0.0f && upperTrigger.contacting && lowerTrigger.contacting) enableJump = true;      //ジャンプトリガーが二つとも接触していればジャンプを許可する(ジャンプ後一定時間無視)
         if (!upperTrigger.contacting && !lowerTrigger.contacting) enableJump = false;                               //ジャンプトリガーが二つとも接触していなければジャンプを禁止する
+        if (!prevEnableJump && enableJump)
+        {
+            //着地した瞬間：着地音を鳴らす
+            AudioManager.SEData seData = audioManager.randingSE;
+            audioSource1.volume = seData.volume;
+            audioSource1.pitch = seData.pitch;
+            if (seData.clip != null) audioSource1.PlayOneShot(seData.clip);
+        }
+
         if (transform.position.y == twoPrevHeight) enableJump = true;                                               //2フレーム前からy座標が変化していないならジャンプを許可する
         twoPrevHeight = onePrevHeight;
         onePrevHeight = transform.position.y;
+
+        prevEnableJump = enableJump;
 
         //ren.material = (enableJump) ? contactingMat : flyingMat;        //デバッグ用
 
@@ -117,15 +133,29 @@ public class PlayerCharacterController : MonoBehaviour
 
                 //一回の小ジャンプ移動が発生
                 Vector3 moveDirTemp = Vector3.zero;
+
                 if (Input.GetButton("Vertical")) moveDirTemp += new Vector3(Mathf.Sin(moveDirForwardAngle), 0.0f, Mathf.Cos(moveDirForwardAngle)) * Input.GetAxisRaw("Vertical");
                 if (Input.GetButton("Horizontal")) moveDirTemp += new Vector3(Mathf.Cos(moveDirForwardAngle), 0.0f, -Mathf.Sin(moveDirForwardAngle)) * Input.GetAxisRaw("Horizontal");
                 moveDir = moveDirTemp.normalized;
+
                 velTemp = new Vector3(moveDir.x * MOVE_LENGTH, velTemp.y, moveDir.z * MOVE_LENGTH);                                 //移動量倍率をかける
+
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.down) * velTemp;     //速度ベクトルをタワーフォワード座標系へ変換
                 if (allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, velTemp.z * FORWARD_MOVE_DECREASE);               //タワー中心方向(z)に速度減衰をかける
                 if (!allowForwardMove) velTemp = new Vector3(velTemp.x, velTemp.y, 0.0f);                                           //allowForwardMoveがfalseならタワー中心方向(z)を0に
                 velTemp = Quaternion.AngleAxis(lookAtTracer.transform.rotation.eulerAngles.y + 180.0f, Vector3.up) * velTemp;       //速度ベクトルを逆変換
-                if (enableJump) velTemp += transform.TransformDirection(Vector3.up * 1.0f);                                         //ジャンプ可能なら小ジャンプを行う
+
+                if (enableJump)
+                {
+                    //ジャンプ可能な場合：小ジャンプを行い、小ジャンプ音を鳴らす
+                    velTemp += transform.TransformDirection(Vector3.up * 1.0f);
+
+                    AudioManager.SEData seData = audioManager.hopWalkSE;
+                    audioSource2.volume = seData.volume;
+                    audioSource2.pitch = seData.pitch;
+                    if (seData.clip != null) audioSource2.PlayOneShot(seData.clip);
+                }
+
                 springObj.GetComponent<SpringSimulation>().SetImpulse(-0.01f, 0.1f);
                 coverObj.GetComponent<SpringSimulation>().SetImpulse(-1.5f, 0.1f);
             }
@@ -226,6 +256,12 @@ public class PlayerCharacterController : MonoBehaviour
                 enableJump = false;
                 disableJumpDelay = 0.1f;        //ジャンプ直後にジャンプトリガー(プレイヤーキャラクター下部)が床に触れているとジャンプが許可されてしまうため、それを防止する猶予時間を設定
             }
+
+            //ジャンプ音を鳴らす
+            AudioManager.SEData seData = audioManager.jumpSE;
+            audioSource3.volume = seData.volume;
+            audioSource3.pitch = seData.pitch;
+            if (seData.clip != null) audioSource3.PlayOneShot(seData.clip);
 
             jumpCharge = 0.0f;
             stopCoverAngle = false;
