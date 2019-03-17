@@ -20,11 +20,22 @@ public class GetScoreObject : MonoBehaviour
 
     private AudioManager audioManager;
 
+    private void OnDrawGizmos()
+    {
+        //デバッグ用：シーン編集時、スコアオブジェクトを吸引する範囲を示す
+        Gizmos.color = new Color(0.5f, 0.5f, 1.0f, 0.1f);
+        Gizmos.DrawSphere(transform.position, GetComponent<SphereCollider>().radius);
+    }
+
     private void Start()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         playerCenter = GameObject.Find("PlayerCenter").transform;
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
+
+        ////デバッグ用：テストプレイ時、スコアオブジェクトを吸引する範囲を示す
+        //GameObject sphere = Instantiate(gameManager.debugSphere, transform.position, Quaternion.identity, transform);
+        //sphere.transform.localScale = Vector3.one * GetComponent<SphereCollider>().radius * 2.0f;
     }
 
     private void Update()
