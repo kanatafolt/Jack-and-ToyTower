@@ -108,12 +108,17 @@ public class SequenceOperator : MonoBehaviour
                         if (diffRate < 0.0f) diffRate = 0.0f;
 
                     seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
-                    if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.right) * 0.2f * (elapsedTime % 0.1f - 0.05f) / 0.05f;         //振動させる場合横揺れ
-                    if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.forward) * 0.2f * (elapsedTime % 0.15f - 0.075f) / 0.075f;    //振動させる場合奥揺れ
                     seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
+
+                    if (!seq[i].sequenced)
+                    {
+                        if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.right) * 0.2f * (elapsedTime % 0.1f - 0.05f) / 0.05f;         //振動させる場合横揺れ
+                        if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.forward) * 0.2f * (elapsedTime % 0.15f - 0.075f) / 0.075f;    //振動させる場合奥揺れ
+                    }
 
                     if (diffRate == 1.0f && !seq[i].sequenced)
                     {
+                        if (quakeEffect) seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);       //振動させた場合座標を正しい位置に戻して終わる
                         seq[i].sequenced = true;
 
                         //シークエンス完了音を鳴らす

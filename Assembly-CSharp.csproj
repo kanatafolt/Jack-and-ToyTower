@@ -65,6 +65,7 @@
     <Compile Include="Assets\Scripts\CenterOfMass.cs" />
     <Compile Include="Assets\Scripts\Debug_PlayerSpawner.cs" />
     <Compile Include="Assets\Scripts\Event_TowerAppearance.cs" />
+    <Compile Include="Assets\Scripts\GenerateObjectEdge.cs" />
     <Compile Include="Assets\Scripts\GetScoreObject.cs" />
     <Compile Include="Assets\Scripts\InBorderArea.cs" />
     <Compile Include="Assets\Scripts\MainGameManager.cs" />
