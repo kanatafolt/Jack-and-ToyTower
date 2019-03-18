@@ -20,7 +20,7 @@ public class SwitchManager : MonoBehaviour
     private Renderer ren;
     private Vector3 initialPosition, toPosition, currentPosition;
     private Color initialEmission, toEmission, currentEmission;
-    private float timeElapsed;
+    private float elapsedTime;
 
     private AudioManager audioManager;
     private AudioSource audioSource;
@@ -28,22 +28,26 @@ public class SwitchManager : MonoBehaviour
     private void Start()
     {
         ren = GetComponent<Renderer>();
-        GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
+        ren.material.EnableKeyword("_EMISSION");
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
         audioSource = GetComponent<AudioSource>();
-        initialPosition = transform.position;
-        toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
-        currentPosition = initialPosition;
         initialEmission = Color.black;
-        toEmission = GetComponent<Renderer>().material.color;
+        toEmission = ren.material.color;
         currentEmission = toEmission;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.tag == "player" && !isOn && timeElapsed / CHANGE_TIME <= 0.8f)
+        if (collision.transform.tag == "player" && !isOn && elapsedTime / CHANGE_TIME <= 0.8f)
         {
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
+            if (elapsedTime == 0.0f)
+            {
+                initialPosition = transform.position;
+                toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
+                currentPosition = initialPosition;
+            }
+
             isOn = true;
             switched = false;
             currentPosition = transform.position;
@@ -59,13 +63,20 @@ public class SwitchManager : MonoBehaviour
 
     private void OnCollisionStay(Collision collision)
     {
-        if (collision.transform.tag == "player" && !isOn && timeElapsed / CHANGE_TIME <= 0.5f)
+        if (collision.transform.tag == "player" && !isOn && elapsedTime / CHANGE_TIME <= 0.5f)
         {
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
+            if (elapsedTime == 0.0f)
+            {
+                initialPosition = transform.position;
+                toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
+                currentPosition = initialPosition;
+            }
+
             isOn = true;
             switched = false;
             currentPosition = transform.position;
-            currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
+            currentEmission = ren.material.GetColor("_EmissionColor");
 
             //スイッチがONになる音
             AudioManager.SEData seData = audioManager.switchOnSE;
@@ -80,14 +91,14 @@ public class SwitchManager : MonoBehaviour
 
         if (isOn)
         {
-            if (timeLimit == 0.0f || timeElapsed < timeLimit)
+            if (timeLimit == 0.0f || elapsedTime < timeLimit)
             {
                 //スイッチがONのとき、制限時間が設定されていないか、あるいは制限時間を超えていないとき：スイッチの変化処理を行う
-                timeElapsed += Time.deltaTime;
+                elapsedTime += Time.deltaTime;
 
                 if (!switched)
                 {
-                    float changeRate = timeElapsed / CHANGE_TIME;
+                    float changeRate = elapsedTime / CHANGE_TIME;
 
                     if (changeRate > 1.0f)
                     {
@@ -101,29 +112,29 @@ public class SwitchManager : MonoBehaviour
                 }
 
             }
-            else if (timeLimit > 0.0f && timeElapsed >= timeLimit)
+            else if (timeLimit > 0.0f && elapsedTime >= timeLimit)
             {
                 //スイッチがONのとき、制限時間が設定されており、制限時間を超えていたら：スイッチをOFFにする
-                timeElapsed = CHANGE_TIME;
+                elapsedTime = CHANGE_TIME;
                 isOn = false;
                 switched = true;
                 currentPosition = transform.position;
-                currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
+                currentEmission = ren.material.GetColor("_EmissionColor");
             }
         }
 
         if (!isOn && timeLimit > 0.0f && switched)
         {
             //スイッチがOFFのとき、制限時間が設定されており、スイッチの逆変化が完了していないとき：スイッチの逆変化処理を行う
-            timeElapsed -= Time.deltaTime;
+            elapsedTime -= Time.deltaTime;
 
-            if (timeElapsed <= 0.0f)
+            if (elapsedTime <= 0.0f)
             {
-                timeElapsed = 0.0f;
+                elapsedTime = 0.0f;
                 switched = false;
             }
 
-            float changeRate = timeElapsed / CHANGE_TIME;
+            float changeRate = elapsedTime / CHANGE_TIME;
 
             transform.position = initialPosition + (currentPosition - initialPosition) * changeRate;
             ren.material.SetColor("_EmissionColor", new Color(initialEmission.r + (currentEmission.r - initialEmission.r) * changeRate,

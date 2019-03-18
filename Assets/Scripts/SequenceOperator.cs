@@ -32,9 +32,10 @@ public class SequenceOperator : MonoBehaviour
     }
     [SerializeField] SequenceObjects[] seq;
 
-    private float timeElapsed, prevTimeElapsed;
+    private float elapsedTime, prevElapsedTime;
     private float finishTime;
 
+    [SerializeField] bool quakeEffect = false;
     private AudioManager audioManager;
 
     private void Reset()
@@ -55,7 +56,7 @@ public class SequenceOperator : MonoBehaviour
 
         finishTime = openInterval * (seq.Length - 1) + openTime;
 
-        //ステージ設計時には展開後の状態で置かれているため、最初にシークエンスを逆向きに行い、初期状態を保存する
+        //ステージ設計時には展開後の状態で置かれているため、最初にシークエンスを逆向きに行う
         for (int i = 0; i < seq.Length; i++)
         {
             if (seq[i].trans != null)
@@ -64,31 +65,51 @@ public class SequenceOperator : MonoBehaviour
                 seq[i].rotAngle = seq[i].rotDiff.magnitude;
                 seq[i].trans.position = seq[i].trans.position + seq[i].trans.TransformDirection(-seq[i].moveDiff);
                 seq[i].trans.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].trans.rotation;
-                seq[i].defaultPos = seq[i].trans.position;
-                seq[i].defaultRot = seq[i].trans.rotation;
             }
         }
     }
 
     private void Update()
     {
-        prevTimeElapsed = timeElapsed;
+        prevElapsedTime = elapsedTime;
 
-        if ((switchObj.isOn || forceOn) && timeElapsed < finishTime)    timeElapsed += Time.deltaTime;
-        if (!switchObj.isOn && !forceOn && timeElapsed > 0.0f)         timeElapsed -= Time.deltaTime;
+        if ((switchObj.isOn || forceOn) && elapsedTime < finishTime)    elapsedTime += Time.deltaTime;
+        if (!switchObj.isOn && !forceOn && elapsedTime > 0.0f)         elapsedTime -= Time.deltaTime;
 
-        if (timeElapsed != prevTimeElapsed)
+        if (elapsedTime != prevElapsedTime)
         {
+            if (prevElapsedTime == 0.0f)
+            {
+                //初回起動時のみ初期位置を保存する
+                for (int i = 0; i < seq.Length; i++)
+                {
+                    if (seq[i].trans != null)
+                    {
+                        seq[i].defaultPos = seq[i].trans.position;
+                        seq[i].defaultRot = seq[i].trans.rotation;
+                    }
+                }
+
+                //振動させる場合音を鳴らす
+                if (quakeEffect)
+                {
+                    AudioManager.SEData seData = audioManager.earthQuakingSE;
+                    if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, transform.position, seData.volume);
+                }
+            }
+
             //各ステージオブジェクトを時間差で展開していく
             for (int i = 0; i < seq.Length; i++)
             {
                 if (seq[i].trans != null)
                 {
-                    float diffRate = (timeElapsed - openInterval * i) / openTime;
+                    float diffRate = (elapsedTime - openInterval * i) / openTime;
                         if (diffRate > 1.0f) diffRate = 1.0f;
                         if (diffRate < 0.0f) diffRate = 0.0f;
 
                     seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
+                    if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.right) * 0.2f * (elapsedTime % 0.1f - 0.05f) / 0.05f;         //振動させる場合横揺れ
+                    if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.forward) * 0.2f * (elapsedTime % 0.15f - 0.075f) / 0.075f;    //振動させる場合奥揺れ
                     seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
 
                     if (diffRate == 1.0f && !seq[i].sequenced)
@@ -104,8 +125,8 @@ public class SequenceOperator : MonoBehaviour
                 }
             }
 
-            if (timeElapsed >= finishTime) timeElapsed = finishTime;
-            if (timeElapsed <= 0.0f) timeElapsed = 0.0f;
+            if (elapsedTime >= finishTime) elapsedTime = finishTime;
+            if (elapsedTime <= 0.0f) elapsedTime = 0.0f;
         }
     }
 }

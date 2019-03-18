@@ -7,13 +7,13 @@
 //・スコアなどUI表示を行う
 ////
 
+#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
-#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
 
 public class MainGameManager : MonoBehaviour
 {

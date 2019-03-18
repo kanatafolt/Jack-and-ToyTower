@@ -1,6 +1,6 @@
 ﻿////
 //GetScoreObject.cs
-//得点オブジェクトのAbsorbTriggerに反応し、プレイヤーがオブジェクトを吸引、スコアを獲得する処理
+//得点オブジェクトのAbsorbTriggerに反応し、プレイヤーがオブジェクトを吸引、スコアを獲得するスクリプト
 ////
 
 using System.Collections;
@@ -33,7 +33,7 @@ public class GetScoreObject : MonoBehaviour
         playerCenter = GameObject.Find("PlayerCenter").transform;
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
 
-        ////デバッグ用：テストプレイ時、スコアオブジェクトを吸引する範囲を示す
+        //デバッグ用：テストプレイ時、スコアオブジェクトを吸引する範囲を示す
         //GameObject sphere = Instantiate(gameManager.debugSphere, transform.position, Quaternion.identity, transform);
         //sphere.transform.localScale = Vector3.one * GetComponent<SphereCollider>().radius * 2.0f;
     }
