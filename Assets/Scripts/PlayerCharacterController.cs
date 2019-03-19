@@ -48,6 +48,9 @@ public class PlayerCharacterController : MonoBehaviour
     private AudioManager audioManager;
     [SerializeField] AudioSource audioSource1, audioSource2, audioSource3;
 
+    private DebugManager debugManager;
+    private bool spectatorMode = false;
+
     ////デバッグ変数
     //[SerializeField] Renderer ren;
     //[SerializeField] Material contactingMat, flyingMat;
@@ -69,11 +72,19 @@ public class PlayerCharacterController : MonoBehaviour
         onePrevHeight = twoPrevHeight = transform.position.y;
         distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
+
+        if (GameObject.Find("DebugManager") != null) debugManager = GameObject.Find("DebugManager").GetComponent<DebugManager>();
     }
 
     private void Update()
     {
-        if (enableInput)
+        if (debugManager != null)
+        {
+            //デバッグ機能使用時、スペクテイターモードの有効/無効を監視する
+            spectatorMode = debugManager.spectatorMode;
+        }
+
+        if (!spectatorMode && enableInput)
         {
             if (moveCharge < MOVE_FREQUENCY) moveCharge += Time.deltaTime;         //移動周期を計算
             if (disableJumpDelay > 0.0f) disableJumpDelay -= Time.deltaTime;        //ジャンプ禁止予備時間を計算
@@ -208,13 +219,19 @@ public class PlayerCharacterController : MonoBehaviour
             if (Input.GetButtonDown("Jump"))
             {
                 //ジャンプキーを押したとき：ばねとカバーの挙動を一時的に止める
-                springObj.GetComponent<SpringSimulation>().enableSpring = false;
-                initialSpringScale = springObj.transform.localScale.y;
+                jumpCharge = 0.0f;
             }
 
             if (Input.GetButton("Jump"))
             {
                 //ジャンプキーを押している間：押す時間に応じて体を縮める(jumpChargeが溜まる)
+                if (jumpCharge == 0.0f)
+                {
+                    springObj.GetComponent<SpringSimulation>().enableSpring = false;
+                    initialSpringScale = springObj.transform.localScale.y;
+                    stopCoverAngle = false;
+                }
+
                 jumpCharge += Time.deltaTime;
                 if (jumpCharge > MAX_JUMP_CHARGE) jumpCharge = MAX_JUMP_CHARGE;
 
@@ -224,7 +241,7 @@ public class PlayerCharacterController : MonoBehaviour
 
                 if (jumpCharge / MAX_JUMP_CHARGE >= COVER_CLOSE_TIMING)
                 {
-                    //カバーを閉め始める
+                    //ジャンプチャージ時間がカバークローズタイミングを超えたら：カバーを閉め始める
                     if (!stopCoverAngle)
                     {
                         stopCoverAngle = true;
@@ -268,7 +285,6 @@ public class PlayerCharacterController : MonoBehaviour
                 if (seData.clip != null) audioSource3.PlayOneShot(seData.clip);
 
                 jumpCharge = 0.0f;
-                stopCoverAngle = false;
             }
 
             //フロアオブジェクトに触れたときに移動入力を行っていなかった場合、一度だけ強制的にx,z方向への移動を0にする(物理演算による滑り防止)
@@ -282,6 +298,21 @@ public class PlayerCharacterController : MonoBehaviour
             rb.velocity = velTemp;
 
             if (rb.velocity.y > 6.0f) Debug.Log("!ERROR! TOO HIGHER JUMP! current velocity:" + rb.velocity);            //デバッグ用エラー検出：プレイヤーの速度が想定ジャンプ速度を超えている
+
+            //キャラクターが進行方向をゆっくりと向く処理
+            float rotDiff = Vector3.Angle(transform.forward, moveDir);
+
+            if (rotDiff >= 0.1f)
+            {
+                if (rotDiff >= 5.0f) rotDiff = 5.0f;
+                else rotDiff *= 0.1f;
+                if (transform.InverseTransformDirection(moveDir).x < 0) rotDiff *= -1;
+                rb.MoveRotation(Quaternion.AngleAxis(rotDiff, Vector3.up) * transform.rotation);
+            }
+            else
+            {
+                if (moveDir != Vector3.zero) transform.forward = moveDir;
+            }
         }
 
         //以下はキャラクター操作が禁止されている間の処理
@@ -289,25 +320,14 @@ public class PlayerCharacterController : MonoBehaviour
         {
             moveDir = transform.forward;
             distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
-        }
-
-        //キャラクターが進行方向をゆっくりと向く処理
-        float rotDiff = Vector3.Angle(transform.forward, moveDir);
-
-        if (rotDiff >= 0.1f)
-        {
-            if (rotDiff >= 5.0f) rotDiff = 5.0f;
-            else rotDiff *= 0.1f;
-            if (transform.InverseTransformDirection(moveDir).x < 0) rotDiff *= -1;
-            rb.MoveRotation(Quaternion.AngleAxis(rotDiff, Vector3.up) * transform.rotation);
-        }
-        else
-        {
-            if (moveDir != Vector3.zero) transform.forward = moveDir;
+            springObj.GetComponent<SpringSimulation>().enableSpring = true;
+            coverObj.GetComponent<SpringSimulation>().enableSpring = true;
+            coverObj.GetComponent<SpringSimulation>().SetImpulse(-15.0f * jumpCharge / MAX_JUMP_CHARGE, 0.1f);
+            jumpCharge = 0.0f;
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+        private void OnCollisionEnter(Collision collision)
     {
         //フロアオブジェクトに触れた瞬間、移動入力を行っていなかった場合：滑り防止フラグをtrueにする
         if (collision.gameObject.tag == "floor" && !Input.GetButton("Vertical") && !Input.GetButton("Horizontal"))

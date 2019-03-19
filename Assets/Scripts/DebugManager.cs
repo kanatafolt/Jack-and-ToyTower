@@ -1,0 +1,110 @@
+﻿////
+//DebugManager.cs
+//デバッグ用の各種機能を扱うスクリプト
+//機能を停止させる場合はシーン上でオブジェクトごと無効化すること
+//現在の機能一覧：
+//・デバッグ用情報表示
+//・プレイヤーの初期位置を変更する
+//・シーンのリセット
+//・すべてのスイッチを強制的にONにするSuperForceOn機能
+//・スペクテイターモード(スペースとシフトによる空中移動、重力・当たり判定無視)の切り替え
+////
+
+#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class DebugManager : MonoBehaviour
+{
+    [SerializeField] GUISkin skin;                              //デバッグUIのGUIスキン
+    public bool SuparForceOn = false;                           //スイッチの一括管理
+    public bool spectatorMode = false;                          //スペクテイターモード
+
+    private KeyCode restartKey = KeyCode.R;
+    private KeyCode superForceOnKey = KeyCode.F;
+    private KeyCode spectatorKey = KeyCode.E;
+
+    private GameObject player, spawner, cameraRig;
+    private Rigidbody playerRb;
+    private bool spectatored = false;           //スペクテイターモードと一致させ、切り替えた瞬間に一度だけ処理を行うための変数
+
+    private void Start()
+    {
+        player = GameObject.Find("Jack");
+        spawner = GameObject.Find("PlayerSpawner");
+        cameraRig = GameObject.Find("CameraRig");
+        playerRb = player.GetComponent<Rigidbody>();
+
+        //プレイヤーの初期位置を変更する
+        player.transform.position = spawner.transform.position;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(restartKey))
+        {
+            //Rキー：シーンのリセット
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        if (Input.GetKeyDown(superForceOnKey))
+        {
+            //Tキー：SuperForceOnを有効化
+            SuparForceOn = true;
+        }
+
+        if (Input.GetKeyDown(spectatorKey))
+        {
+            //Gキー：スペクテイターモードの切り替え(スペースとシフトによる空中移動、重力・当たり判定無視)
+            spectatorMode = (spectatorMode) ? false : true;
+        }
+
+        if (spectatorMode)
+        {
+            if (!spectatored)
+            {
+                player.GetComponent<PlayerCollisionSwitcher>().SetCollisionOff();
+                playerRb.useGravity = false;
+                spectatored = true;
+            }
+
+            //スペクテイターモードでの移動処理
+            playerRb.velocity = Vector3.zero;
+            playerRb.position += cameraRig.transform.TransformDirection(new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("FloatingVertical"), Input.GetAxisRaw("Vertical")) * 0.15f);
+        }
+        else
+        {
+            if (spectatored)
+            {
+                player.GetComponent<PlayerCollisionSwitcher>().SetCollisionOn();
+                playerRb.useGravity = true;
+                spectatored = false;
+            }
+        }
+    }
+
+    private void OnGUI()
+    {
+        //デバッグ時の画面表示を行う
+        float leftMargin = 10.0f;       //左マージン
+        float topMargin = 10.0f;        //上マージン(自動改行送り)
+        float lineWidth = 1000.0f;    //一行の横幅
+        float lineHeight = 24.0f;       //一行の縦幅
+
+        GUI.Label(new Rect(leftMargin, topMargin, lineWidth, lineHeight), "DEBUG MODE", skin.GetStyle("label"));
+        topMargin += lineHeight;
+
+        GUI.Label(new Rect(leftMargin, topMargin, lineWidth, lineHeight), restartKey + " : Restart", skin.GetStyle("label"));
+        topMargin += lineHeight;
+
+        GUI.Label(new Rect(leftMargin, topMargin, lineWidth, lineHeight), superForceOnKey + " : Supar Force On", skin.GetStyle("label"));
+        topMargin += lineHeight;
+
+        GUI.Label(new Rect(leftMargin, topMargin, lineWidth, lineHeight), spectatorKey + " : Spectator Mode (" + spectatorMode + ")", skin.GetStyle("label"));
+        topMargin += lineHeight;
+    }
+}

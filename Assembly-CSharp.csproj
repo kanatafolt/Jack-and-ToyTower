@@ -63,7 +63,7 @@
     <Compile Include="Assets\Scripts\AudioManager.cs" />
     <Compile Include="Assets\Scripts\CameraRigRotater.cs" />
     <Compile Include="Assets\Scripts\CenterOfMass.cs" />
-    <Compile Include="Assets\Scripts\Debug_PlayerSpawner.cs" />
+    <Compile Include="Assets\Scripts\DebugManager.cs" />
     <Compile Include="Assets\Scripts\Event_TowerAppearance.cs" />
     <Compile Include="Assets\Scripts\GenerateObjectEdge.cs" />
     <Compile Include="Assets\Scripts\GetScoreObject.cs" />
@@ -72,9 +72,11 @@
     <Compile Include="Assets\Scripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
+    <Compile Include="Assets\Scripts\PlayerCollisionSwitcher.cs" />
     <Compile Include="Assets\Scripts\PlayerJumpTrigger.cs" />
     <Compile Include="Assets\Scripts\PlayerLookAtTracer.cs" />
     <Compile Include="Assets\Scripts\PlayerShadowRaycast.cs" />
+    <Compile Include="Assets\Scripts\SafetyNet.cs" />
     <Compile Include="Assets\Scripts\SequenceOperator.cs" />
     <Compile Include="Assets\Scripts\SpringSimulation.cs" />
     <Compile Include="Assets\Scripts\SwitchManager.cs" />

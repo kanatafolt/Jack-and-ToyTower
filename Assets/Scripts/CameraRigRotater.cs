@@ -13,7 +13,7 @@ public class CameraRigRotater : MonoBehaviour
     const float TOWER_ROTATE_RATE = 0.2f;       //タワーの回転速度(1で一瞬)
     const float TOWER_ELEVATE_RATE = 0.2f;      //タワーの上昇下降速度(1で一瞬)
     const float CAMERA_BOTTOM_HEIGHT = 0.0f;    //カメラの最下点
-    const float CAMERA_TOP_HEIGHT = 20.5f;      //カメラの最上点
+    const float CAMERA_TOP_HEIGHT = 30.0f;      //カメラの最上点
 
     [SerializeField] Transform player, tracer;
     [SerializeField] Transform leftBorder, rightBorder, upperBorder, lowerBorder;
@@ -42,19 +42,19 @@ public class CameraRigRotater : MonoBehaviour
         upperHeightDiff = tracer.position.y - upperBorder.position.y;
         lowerHeightDiff = tracer.position.y - lowerBorder.position.y;
 
-        //LeftBorderを越えている(負のとき)：TowerRigを逆転させる(反時計回り)
+        //LeftBorderを越えている(負のとき)：CameraRigを正転させる(時計回り)
         if (-leftAngleDiff > 0.0f)
         {
             transform.Rotate(Vector3.up * -leftAngleDiff * TOWER_ROTATE_RATE);
         }
 
-        //RightBorderを越えている(正のとき)：TowerRigを正転させる(時計回り)
+        //RightBorderを越えている(正のとき)：CameraRigを逆転させる(反時計回り)
         if (rightAngleDiff < 0.0f)
         {
             transform.Rotate(Vector3.up * rightAngleDiff * TOWER_ROTATE_RATE);
         }
 
-        //UpperBorderを越えている(負のとき)：TowerRigを下降させる
+        //UpperBorderを越えている(負のとき)：CameraRigを上昇させる
         if (upperHeightDiff > 0.0f)
         {
             if ((Vector3.up * upperHeightDiff * TOWER_ELEVATE_RATE + transform.position).y < CAMERA_TOP_HEIGHT)
@@ -67,7 +67,7 @@ public class CameraRigRotater : MonoBehaviour
             }
         }
 
-        //LowerBorderを越えている(正のとき)：TowerRigを上昇させる
+        //LowerBorderを越えている(正のとき)：CameraRigを下降させる
         if (lowerHeightDiff < 0.0f)
         {
             if ((Vector3.up * lowerHeightDiff * TOWER_ELEVATE_RATE + transform.position).y > CAMERA_BOTTOM_HEIGHT)

@@ -24,6 +24,7 @@ public class SwitchManager : MonoBehaviour
 
     private AudioManager audioManager;
     private AudioSource audioSource;
+    private DebugManager debugManager;
 
     private void Start()
     {
@@ -34,6 +35,8 @@ public class SwitchManager : MonoBehaviour
         initialEmission = Color.black;
         toEmission = ren.material.color;
         currentEmission = toEmission;
+
+        if (GameObject.Find("DebugManager") != null) debugManager = GameObject.Find("DebugManager").GetComponent<DebugManager>();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -41,23 +44,7 @@ public class SwitchManager : MonoBehaviour
         if (collision.transform.tag == "player" && !isOn && elapsedTime / CHANGE_TIME <= 0.8f)
         {
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
-            if (elapsedTime == 0.0f)
-            {
-                initialPosition = transform.position;
-                toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
-                currentPosition = initialPosition;
-            }
-
-            isOn = true;
-            switched = false;
-            currentPosition = transform.position;
-            currentEmission = GetComponent<Renderer>().material.GetColor("_EmissionColor");
-
-            //スイッチがONになる音
-            AudioManager.SEData seData = audioManager.switchOnSE;
-            audioSource.volume = seData.volume;
-            audioSource.pitch = seData.pitch;
-            if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
+            SwitchOn();
         }
     }
 
@@ -66,28 +53,13 @@ public class SwitchManager : MonoBehaviour
         if (collision.transform.tag == "player" && !isOn && elapsedTime / CHANGE_TIME <= 0.5f)
         {
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
-            if (elapsedTime == 0.0f)
-            {
-                initialPosition = transform.position;
-                toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
-                currentPosition = initialPosition;
-            }
-
-            isOn = true;
-            switched = false;
-            currentPosition = transform.position;
-            currentEmission = ren.material.GetColor("_EmissionColor");
-
-            //スイッチがONになる音
-            AudioManager.SEData seData = audioManager.switchOnSE;
-            audioSource.volume = seData.volume;
-            audioSource.pitch = seData.pitch;
-            if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
+            SwitchOn();
         }
     }
 
     private void Update()
     {
+        if (debugManager != null) if (debugManager.SuparForceOn && !isOn && elapsedTime / CHANGE_TIME <= 0.1f) SwitchOn();
 
         if (isOn)
         {
@@ -140,5 +112,27 @@ public class SwitchManager : MonoBehaviour
             ren.material.SetColor("_EmissionColor", new Color(initialEmission.r + (currentEmission.r - initialEmission.r) * changeRate,
                 initialEmission.g + (currentEmission.g - initialEmission.g) * changeRate, initialEmission.b + (currentEmission.b - initialEmission.b) * changeRate));
         }
+    }
+
+    private void SwitchOn ()
+    {
+        //スイッチがONになる処理
+        if (elapsedTime == 0.0f)
+        {
+            initialPosition = transform.position;
+            toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
+            currentPosition = initialPosition;
+        }
+
+        isOn = true;
+        switched = false;
+        currentPosition = transform.position;
+        currentEmission = ren.material.GetColor("_EmissionColor");
+
+        //スイッチがONになる音
+        AudioManager.SEData seData = audioManager.switchOnSE;
+        audioSource.volume = seData.volume;
+        audioSource.pitch = seData.pitch;
+        if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
     }
 }

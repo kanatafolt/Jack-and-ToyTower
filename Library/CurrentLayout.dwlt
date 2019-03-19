@@ -113,7 +113,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 498}
   m_MaxSize: {x: 14004, y: 14048}
   vertical: 1
-  controlID: 117
+  controlID: 97
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -138,7 +138,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 498}
   m_MaxSize: {x: 14004, y: 14048}
   vertical: 0
-  controlID: 118
+  controlID: 98
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -163,7 +163,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 498}
   m_MaxSize: {x: 10002, y: 14048}
   vertical: 1
-  controlID: 119
+  controlID: 99
 --- !u!114 &8
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -188,7 +188,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 224}
   m_MaxSize: {x: 8006, y: 4024}
   vertical: 0
-  controlID: 120
+  controlID: 100
 --- !u!114 &9
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -407,18 +407,18 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 925effffb479ffff667fffffd4fbfffffc2b0000b62d0000ba2e0000d82e0000aa2f000086bb020094bd0200
+      m_ExpandedIDs: b695ffff78cbffff30e0ffffd4fbffffca2c00000e2f0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: Tutorial_Crouching
-        m_OriginalName: Tutorial_Crouching
+        m_Name: PlayerSpawnerRig
+        m_OriginalName: PlayerSpawnerRig
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: -34380
+        m_UserData: 12266
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
         m_OriginalEventType: 0
@@ -463,9 +463,9 @@ MonoBehaviour:
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 5.499545, y: 10.1, z: 2.4485545}
+    m_Target: {x: 6.7719784, y: 12.249207, z: -6.226186}
     speed: 2
-    m_Value: {x: 5.499545, y: 10.1, z: 2.4485545}
+    m_Value: {x: 6.7719784, y: 12.249207, z: -6.226186}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -485,21 +485,21 @@ MonoBehaviour:
       speed: 2
       m_Value: 0
     yGrid:
-      m_Target: 0
+      m_Target: 1
       speed: 2
-      m_Value: 0
+      m_Value: 1
     zGrid:
       m_Target: 0
       speed: 2
       m_Value: 0
   m_Rotation:
-    m_Target: {x: -0.006809611, y: 0.8491949, z: -0.010953654, w: -0.5279221}
+    m_Target: {x: 0.20619252, y: -0.044325005, z: 0.009349334, w: 0.97746235}
     speed: 2
-    m_Value: {x: -0.006809611, y: 0.8491949, z: -0.010953654, w: -0.5279221}
+    m_Value: {x: 0.20619252, y: -0.044325005, z: 0.009349334, w: 0.97746235}
   m_Size:
-    m_Target: 6.616187
+    m_Target: 13.825708
     speed: 2
-    m_Value: 6.616187
+    m_Value: 13.825708
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -575,31 +575,31 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets
+    - Assets/Scripts
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets
+  - Assets/Scripts
   m_LastFoldersGridSize: -1
   m_LastProjectPath: F:\FoltDocument\Develop\GitHub\Jack-and-ToyTower
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 6e260000
-    m_LastClickedID: 9838
-    m_ExpandedIDs: 000000006e260000ae270000b22a00002e3200003032000000ca9a3b
+    scrollPos: {x: 0, y: 21}
+    m_SelectedIDs: 922a0000
+    m_LastClickedID: 10898
+    m_ExpandedIDs: 000000006e2600003a2a0000902a0000c8320000ca32000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: Prefabs
-      m_OriginalName: Prefabs
+      m_Name: Scripts
+      m_OriginalName: Scripts
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: 10890
+      m_UserData: 10898
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
       m_OriginalEventType: 0
@@ -616,7 +616,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000006e260000ae270000b22a00002e32000030320000
+    m_ExpandedIDs: 000000006e260000b6270000d42a0000c8320000ca320000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -643,8 +643,8 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
-    m_ExpandedInstanceIDs: 00000000d0230000c6230000e2230000d02400004c2400006c250000d0250000c6250000e2290000
+    m_HadKeyboardFocusLastEvent: 1
+    m_ExpandedInstanceIDs: 00000000d0230000c6230000e2230000d02400004c2400006c250000d0250000c6250000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
