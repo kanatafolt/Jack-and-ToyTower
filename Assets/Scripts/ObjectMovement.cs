@@ -46,9 +46,9 @@ public class ObjectMovement : MonoBehaviour
         }
 
         //並進処理
-        rb.MovePosition(transform.position + translationVelocity * Time.deltaTime);
+        rb.MovePosition(transform.position + transform.TransformDirection(translationVelocity * Time.deltaTime));
 
         //回転処理
-        rb.MoveRotation(Quaternion.AngleAxis(rotationVelocity * Time.deltaTime, rotationPivot) * transform.rotation);
+        rb.MoveRotation(Quaternion.AngleAxis(rotationVelocity * Time.deltaTime, transform.TransformDirection(rotationPivot)) * transform.rotation);
     }
 }

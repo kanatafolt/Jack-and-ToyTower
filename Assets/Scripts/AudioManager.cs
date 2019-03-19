@@ -25,4 +25,5 @@ public class AudioManager : MonoBehaviour
     //public SEData switchOffSE;
     public SEData sequenceFinishSE;
     public SEData earthQuakingSE;
+    public SEData safetyNetSE;
 }

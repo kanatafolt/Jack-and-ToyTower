@@ -71,6 +71,7 @@
     <Compile Include="Assets\Scripts\MainGameManager.cs" />
     <Compile Include="Assets\Scripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
+    <Compile Include="Assets\Scripts\ObjectToAndFrom.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
     <Compile Include="Assets\Scripts\PlayerCollisionSwitcher.cs" />
     <Compile Include="Assets\Scripts\PlayerJumpTrigger.cs" />

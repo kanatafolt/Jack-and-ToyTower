@@ -30,7 +30,7 @@ public class SequenceOperator : MonoBehaviour
         [HideInInspector] public float rotAngle;                //rotDiffから回転角度を分離
         [HideInInspector] public bool sequenced;                //シークエンス完了時のイベントを管理する
     }
-    [SerializeField] SequenceObjects[] seq;
+    [SerializeField] SequenceObjects[] seq = new SequenceObjects[1];
 
     private float elapsedTime, prevElapsedTime;
     private float finishTime;

@@ -21,6 +21,7 @@ using UnityEngine.SceneManagement;
 public class DebugManager : MonoBehaviour
 {
     [SerializeField] GUISkin skin;                              //デバッグUIのGUIスキン
+    [SerializeField] GameObject spawner;                        //プレイヤーの初期位置
     public bool SuparForceOn = false;                           //スイッチの一括管理
     public bool spectatorMode = false;                          //スペクテイターモード
 
@@ -28,19 +29,30 @@ public class DebugManager : MonoBehaviour
     private KeyCode superForceOnKey = KeyCode.F;
     private KeyCode spectatorKey = KeyCode.E;
 
-    private GameObject player, spawner, cameraRig;
+    private GameObject player, cameraRig;
     private Rigidbody playerRb;
     private bool spectatored = false;           //スペクテイターモードと一致させ、切り替えた瞬間に一度だけ処理を行うための変数
+
+    private void Reset()
+    {
+        spawner = GameObject.Find("PlayerSpawner");
+    }
+
+    private void OnDrawGizmos()
+    {
+        //デバッグ用：シーン編集時、プレイヤーの初期位置に目印を表示する
+        Gizmos.color = new Color(0.0f, 1.0f, 0.0f, 0.5f);
+        Gizmos.DrawCube(spawner.transform.position, Vector3.one * 0.2f);
+    }
 
     private void Start()
     {
         player = GameObject.Find("Jack");
-        spawner = GameObject.Find("PlayerSpawner");
         cameraRig = GameObject.Find("CameraRig");
         playerRb = player.GetComponent<Rigidbody>();
 
         //プレイヤーの初期位置を変更する
-        player.transform.position = spawner.transform.position;
+        player.transform.position = spawner.transform.position + Vector3.up * 1.5f;
     }
 
     private void Update()
