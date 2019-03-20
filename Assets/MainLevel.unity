@@ -2607,6 +2607,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b8442e02e2f5d346a3aaaf18826bf7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  towerAppearanced: 0
   debugSphere: {fileID: 8682460679036990422, guid: c1bbdb938b9257244b6a7faa0ed4540d,
     type: 3}
 --- !u!114 &449746975
@@ -7349,7 +7350,7 @@ Transform:
   m_Children:
   - {fileID: 1809629386}
   m_Father: {fileID: 1173316668}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 12, z: 0}
 --- !u!1 &1038012685
 GameObject:
@@ -8615,6 +8616,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 931221270}
+  - {fileID: 1831570520478136830}
   - {fileID: 3682247848986292294}
   - {fileID: 3866290727753881740}
   - {fileID: 1659028823}
@@ -12731,7 +12733,7 @@ Transform:
   m_Children:
   - {fileID: 942638194}
   m_Father: {fileID: 1173316668}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 60, z: 0}
 --- !u!1 &1664121779
 GameObject:
@@ -13339,7 +13341,7 @@ Transform:
   m_Children:
   - {fileID: 400288763}
   m_Father: {fileID: 1173316668}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 63, z: 0}
 --- !u!114 &1785658944 stripped
 MonoBehaviour:
@@ -15914,7 +15916,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2103226801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16218,8 +16220,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skin: {fileID: 11400000, guid: 4676bb88f6be01746988119939ee11b9, type: 2}
   spawner: {fileID: 1361487692}
-  SuparForceOn: 0
+  suparForceOn: 0
   spectatorMode: 0
+  towerAppearance: 0
 --- !u!64 &69951221908022169
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -16328,6 +16331,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 744688608670298020, guid: 37b80927ea833664597e996e4733089b,
         type: 3}
+      propertyPath: maskTrigger.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 744688608670298020, guid: 37b80927ea833664597e996e4733089b,
+        type: 3}
       propertyPath: safetyNetMaskTrigger
       value: 
       objectReference: {fileID: 7635835242318404004}
@@ -16335,7 +16343,7 @@ PrefabInstance:
         type: 3}
       propertyPath: maskTrigger.Array.data[0]
       value: 
-      objectReference: {fileID: 7635835242318404004}
+      objectReference: {fileID: 3708482682209600067}
     - target: {fileID: 744688608670298020, guid: 37b80927ea833664597e996e4733089b,
         type: 3}
       propertyPath: goToMaskTrigger.Array.data[0].mask
@@ -16356,6 +16364,11 @@ PrefabInstance:
       propertyPath: goToMaskTrigger.Array.data[1].goToPoint
       value: 
       objectReference: {fileID: 400288763}
+    - target: {fileID: 744688608670298020, guid: 37b80927ea833664597e996e4733089b,
+        type: 3}
+      propertyPath: maskTrigger.Array.data[1]
+      value: 
+      objectReference: {fileID: 7635835242318404004}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37b80927ea833664597e996e4733089b, type: 3}
 --- !u!23 &1431438826261382125
@@ -16395,6 +16408,21 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!4 &1831570520478136830
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8150786724262553323}
+  m_LocalRotation: {x: -0, y: 0.5, z: -0, w: 0.8660254}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.1, y: 80, z: 1.1}
+  m_Children:
+  - {fileID: 2750094514389557489}
+  m_Father: {fileID: 1173316668}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 60, z: 0}
 --- !u!33 &2156721852535955002
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -16417,6 +16445,71 @@ Transform:
   m_Father: {fileID: 3682247848986292294}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -90, y: 45, z: 0}
+--- !u!4 &2750094514389557489
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708482682209600066}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: -0.5, w: -0.5}
+  m_LocalPosition: {x: -0, y: -0.25, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1831570520478136830}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: -90, y: -270, z: 0}
+--- !u!64 &2824113115255461210
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708482682209600066}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 1
+  m_CookingOptions: 14
+  m_Mesh: {fileID: 4300000, guid: 150346e92a1c94b4a8465bff9018826b, type: 3}
+--- !u!23 &3119260022708686758
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708482682209600066}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 8fa9ac39d3179fc46b540f40fda71256, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
 --- !u!4 &3682247848986292294
 Transform:
   m_ObjectHideFlags: 0
@@ -16430,8 +16523,42 @@ Transform:
   m_Children:
   - {fileID: 2222822827500104892}
   m_Father: {fileID: 1173316668}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 60, z: 0}
+--- !u!1 &3708482682209600066
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2750094514389557489}
+  - component: {fileID: 7633833605208426425}
+  - component: {fileID: 3119260022708686758}
+  - component: {fileID: 2824113115255461210}
+  - component: {fileID: 3708482682209600067}
+  m_Layer: 12
+  m_Name: default
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &3708482682209600067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708482682209600066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abc26924d58b1444f94ffc4c582eb73e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  contacting: 0
+  contactTagName: playerCenterTrigger
 --- !u!4 &3866290727753881740
 Transform:
   m_ObjectHideFlags: 0
@@ -16445,7 +16572,7 @@ Transform:
   m_Children:
   - {fileID: 5215628597203407533}
   m_Father: {fileID: 1173316668}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 37.5, z: 0}
 --- !u!1 &4803657911483869691
 GameObject:
@@ -16532,7 +16659,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3682247848986292294}
   m_Layer: 12
-  m_Name: SafetyNetMask
+  m_Name: SafetyNetMask_Cake
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16552,6 +16679,14 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 14
   m_Mesh: {fileID: 4300000, guid: 44dbc49972144944aaff6ace326226ba, type: 3}
+--- !u!33 &7633833605208426425
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708482682209600066}
+  m_Mesh: {fileID: 4300000, guid: 150346e92a1c94b4a8465bff9018826b, type: 3}
 --- !u!1 &7635835242318404003
 GameObject:
   m_ObjectHideFlags: 0
@@ -16620,6 +16755,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   contacting: 0
   contactTagName: playerCenterTrigger
+--- !u!1 &8150786724262553323
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1831570520478136830}
+  m_Layer: 12
+  m_Name: SafetyNetMask_Ground
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &8332832129972475012
 Transform:
   m_ObjectHideFlags: 0

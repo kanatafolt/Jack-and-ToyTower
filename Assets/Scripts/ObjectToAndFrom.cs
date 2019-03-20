@@ -17,7 +17,7 @@ using UnityEngine;
 
 public class ObjectToAndFrom : MonoBehaviour
 {
-    private bool isOn = true;           //falseのときオブジェクトの運動は停止する
+    private bool isOn = false;          //falseのときオブジェクトの運動は停止する
     private bool isStarted = false;     //起動後、初回処理を行ったかどうか
     private bool isReturn = false;      //falseなら往路、trueなら復路
     private bool isInterval = false;    //インターバル(往路・復路間の待機時間)中かどうか
@@ -36,12 +36,14 @@ public class ObjectToAndFrom : MonoBehaviour
     private Vector3 initialPosition, toPosition;
     private Quaternion initialRotation;
 
+    private MainGameManager gameManager;
     private AudioManager audioManager;
     private AudioSource audioSource;
 
     private void Start()
     {
         rb = gameObject.AddComponent<Rigidbody>();
+        gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
         audioSource = gameObject.AddComponent<AudioSource>();
 
@@ -60,6 +62,12 @@ public class ObjectToAndFrom : MonoBehaviour
 
     private void Update()
     {
+        if (!isOn)
+        {
+            //共通起動条件：タワーの出現が完了する
+            if (gameManager.towerAppearanced) isOn = true;
+        }
+
         if (isOn)
         {
             if (!isStarted)

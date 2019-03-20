@@ -24,6 +24,7 @@ public class SequenceOperator : MonoBehaviour
         public Transform trans;                                 //展開対象オブジェクト
         public Vector3 moveDiff;                                //移動量
         public Vector3 rotDiff;                                 //回転量
+        public bool isToAndFromObject;                          //ObjectToAndFromによって制御されるオブジェクトかどうか
         [HideInInspector] public Vector3 defaultPos;            //元々のpositionを保持
         [HideInInspector] public Quaternion defaultRot;         //元々のrotationを保持
         [HideInInspector] public Vector3 rotPivot;              //rotDiffから回転軸を分離
@@ -104,11 +105,18 @@ public class SequenceOperator : MonoBehaviour
                 if (seq[i].trans != null)
                 {
                     float diffRate = (elapsedTime - openInterval * i) / openTime;
-                        if (diffRate > 1.0f) diffRate = 1.0f;
-                        if (diffRate < 0.0f) diffRate = 0.0f;
+                    if (diffRate > 1.0f) diffRate = 1.0f;
+                    if (diffRate < 0.0f) diffRate = 0.0f;
 
-                    seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
-                    seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
+                    if (!seq[i].isToAndFromObject)
+                    {
+                        seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
+                        seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
+                    }
+                    else
+                    {
+                        //シークエンス対象がToAndFromオブジェクトの場合
+                    }
 
                     if (!seq[i].sequenced)
                     {

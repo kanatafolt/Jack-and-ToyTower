@@ -59,7 +59,7 @@ public class SwitchManager : MonoBehaviour
 
     private void Update()
     {
-        if (debugManager != null) if (debugManager.SuparForceOn && !isOn && elapsedTime / CHANGE_TIME <= 0.1f) SwitchOn();
+        if (debugManager != null) if (debugManager.suparForceOn && !isOn && elapsedTime / CHANGE_TIME <= 0.1f) SwitchOn();
 
         if (isOn)
         {

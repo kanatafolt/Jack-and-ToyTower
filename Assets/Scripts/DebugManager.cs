@@ -8,6 +8,7 @@
 //・シーンのリセット
 //・すべてのスイッチを強制的にONにするSuperForceOn機能
 //・スペクテイターモード(スペースとシフトによる空中移動、重力・当たり判定無視)の切り替え
+//タワーが出現した状態でゲームが始まるTowerAppearance機能
 ////
 
 #pragma warning disable 0649    //変数が初期化されていないという警告を無視する
@@ -22,13 +23,15 @@ public class DebugManager : MonoBehaviour
 {
     [SerializeField] GUISkin skin;                              //デバッグUIのGUIスキン
     [SerializeField] GameObject spawner;                        //プレイヤーの初期位置
-    public bool SuparForceOn = false;                           //スイッチの一括管理
+    public bool suparForceOn = false;                           //スイッチの一括管理
     public bool spectatorMode = false;                          //スペクテイターモード
+    [SerializeField] bool towerAppearance = true;               //タワーが出現済みの状態でゲームが始まる
 
     private KeyCode restartKey = KeyCode.R;
     private KeyCode superForceOnKey = KeyCode.F;
     private KeyCode spectatorKey = KeyCode.E;
 
+    private MainGameManager gameManager;
     private GameObject player, cameraRig;
     private Rigidbody playerRb;
     private bool spectatored = false;           //スペクテイターモードと一致させ、切り替えた瞬間に一度だけ処理を行うための変数
@@ -45,14 +48,29 @@ public class DebugManager : MonoBehaviour
         Gizmos.DrawCube(spawner.transform.position, Vector3.one * 0.2f);
     }
 
+    private void Awake()
+    {
+        if (towerAppearance)
+        {
+            //TowerAppearanceが有効のとき：タワースイッチを無効化する
+            GameObject.Find("TowerSwitch(Floor)").SetActive(false);
+        }
+    }
+
     private void Start()
     {
+        gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         player = GameObject.Find("Jack");
         cameraRig = GameObject.Find("CameraRig");
         playerRb = player.GetComponent<Rigidbody>();
 
         //プレイヤーの初期位置を変更する
         player.transform.position = spawner.transform.position + Vector3.up * 1.5f;
+
+        if (towerAppearance)
+        {
+            gameManager.towerAppearanced = true;
+        }
     }
 
     private void Update()
@@ -66,7 +84,7 @@ public class DebugManager : MonoBehaviour
         if (Input.GetKeyDown(superForceOnKey))
         {
             //Tキー：SuperForceOnを有効化
-            SuparForceOn = true;
+            suparForceOn = true;
         }
 
         if (Input.GetKeyDown(spectatorKey))
@@ -105,7 +123,7 @@ public class DebugManager : MonoBehaviour
         float leftMargin = 10.0f;       //左マージン
         float topMargin = 10.0f;        //上マージン(自動改行送り)
         float lineWidth = 1000.0f;    //一行の横幅
-        float lineHeight = 24.0f;       //一行の縦幅
+        float lineHeight = 28.0f;       //一行の縦幅
 
         GUI.Label(new Rect(leftMargin, topMargin, lineWidth, lineHeight), "DEBUG MODE", skin.GetStyle("label"));
         topMargin += lineHeight;

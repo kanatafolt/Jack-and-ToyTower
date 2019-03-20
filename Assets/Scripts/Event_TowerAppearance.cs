@@ -68,6 +68,7 @@ public class Event_TowerAppearance : MonoBehaviour
                 elapsedTime = finishTime;
                 colSwitcher.SetCollisionOn();
                 player.GetComponent<PlayerCharacterController>().enableInput = true;
+                GameObject.Find("GameManager").GetComponent<MainGameManager>().towerAppearanced = true;
             }
         }
     }

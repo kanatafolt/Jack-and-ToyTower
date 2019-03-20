@@ -4,6 +4,7 @@
 //現在の機能：
 //・各種キー入力を受け付け、ゲーム進行の操作を行う
 //・スコアなどゲームデータを管理する
+//・タワーの出現状態など、ゲームの進行情報を受け取り、また受け渡す
 //・スコアなどUI表示を行う
 ////
 
@@ -19,6 +20,8 @@ public class MainGameManager : MonoBehaviour
 {
     private float score = 0.0f;
     private Text scoreText;
+
+    [HideInInspector] public bool towerAppearanced = false;
 
     public GameObject debugSphere;
 
