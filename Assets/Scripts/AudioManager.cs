@@ -24,6 +24,11 @@ public class AudioManager : MonoBehaviour
     public SEData switchOnSE;
     //public SEData switchOffSE;
     public SEData sequenceFinishSE;
-    public SEData earthQuakingSE;
+    public SEData objectToAndFromSE;
+
+    //ステージオブジェクト関係
     public SEData safetyNetSE;
+
+    //イベントシーン関係
+    public SEData earthQuakingSE;
 }
