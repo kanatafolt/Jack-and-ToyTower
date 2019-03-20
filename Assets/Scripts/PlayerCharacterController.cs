@@ -27,9 +27,9 @@ public class PlayerCharacterController : MonoBehaviour
     [SerializeField] enum MoveOption { cameraAngle,  polarCoordinates, oculusGoPolarCoordinates, oculusGoControllerAngleAndPolarCoordinates }   //各オプションの詳細説明は後述
     [SerializeField] MoveOption moveOption = MoveOption.polarCoordinates;
 
-    [SerializeField] GameObject cameraRig, lookAtTracer, springObj, coverObj;
-    [SerializeField] PlayerJumpTrigger upperTrigger, lowerTrigger;
     private Rigidbody rb;
+    private GameObject cameraRig, lookAtTracer, springObj, coverObj;
+    private TriggerContactingOrNot upperTrigger, lowerTrigger;
 
     [HideInInspector] public bool enableInput = true;
     private Vector3 moveDir;                        //進行方向を表す単位ベクトル
@@ -55,25 +55,21 @@ public class PlayerCharacterController : MonoBehaviour
     //[SerializeField] Renderer ren;
     //[SerializeField] Material contactingMat, flyingMat;
 
-    private void Reset()
+    private void Start()
     {
+        rb = GetComponent<Rigidbody>();
         cameraRig = GameObject.Find("CameraRig");
         lookAtTracer = GameObject.Find("PlayerLookAtTracer");
         springObj = GameObject.Find("SpringRig");
         coverObj = GameObject.Find("CoverRig");
-        upperTrigger = GameObject.Find("UpperJumpTrigger").GetComponent<PlayerJumpTrigger>();
-        lowerTrigger = GameObject.Find("LowerJumpTrigger").GetComponent<PlayerJumpTrigger>();
-    }
+        upperTrigger = GameObject.Find("UpperJumpTrigger").GetComponent<TriggerContactingOrNot>();
+        lowerTrigger = GameObject.Find("LowerJumpTrigger").GetComponent<TriggerContactingOrNot>();
+        audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
+        if (GameObject.Find("DebugManager") != null) debugManager = GameObject.Find("DebugManager").GetComponent<DebugManager>();
 
-    private void Start()
-    {
-        rb = GetComponent<Rigidbody>();
         moveDir = transform.forward;
         onePrevHeight = twoPrevHeight = transform.position.y;
         distanceToTower = Vector3.Distance(transform.position, lookAtTracer.transform.position);
-        audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
-
-        if (GameObject.Find("DebugManager") != null) debugManager = GameObject.Find("DebugManager").GetComponent<DebugManager>();
     }
 
     private void Update()
@@ -101,9 +97,10 @@ public class PlayerCharacterController : MonoBehaviour
                 if (seData.clip != null) audioSource1.PlayOneShot(seData.clip);
             }
 
-            if (transform.position.y == twoPrevHeight) enableJump = true;                                               //2フレーム前からy座標が変化していないならジャンプを許可する
-            twoPrevHeight = onePrevHeight;
-            onePrevHeight = transform.position.y;
+            ////2フレーム前からy座標が変化していないならジャンプを許可する(凍結中)
+            //if (transform.position.y == twoPrevHeight) enableJump = true;
+            //twoPrevHeight = onePrevHeight;
+            //onePrevHeight = transform.position.y;
 
             prevEnableJump = enableJump;
 

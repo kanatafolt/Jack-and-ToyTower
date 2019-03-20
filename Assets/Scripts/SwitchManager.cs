@@ -8,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(AudioSource))]
+//[RequireComponent(typeof(AudioSource))]
 public class SwitchManager : MonoBehaviour
 {
     const float CHANGE_TIME = 0.1f;                     //スイッチの変化にかかる時間
@@ -31,7 +31,7 @@ public class SwitchManager : MonoBehaviour
         ren = GetComponent<Renderer>();
         ren.material.EnableKeyword("_EMISSION");
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
-        audioSource = GetComponent<AudioSource>();
+        audioSource = gameObject.AddComponent<AudioSource>();
         initialEmission = Color.black;
         toEmission = ren.material.color;
         currentEmission = toEmission;

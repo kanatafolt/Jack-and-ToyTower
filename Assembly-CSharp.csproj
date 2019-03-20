@@ -74,13 +74,13 @@
     <Compile Include="Assets\Scripts\OldScripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
     <Compile Include="Assets\Scripts\PlayerCollisionSwitcher.cs" />
-    <Compile Include="Assets\Scripts\PlayerJumpTrigger.cs" />
     <Compile Include="Assets\Scripts\PlayerLookAtTracer.cs" />
     <Compile Include="Assets\Scripts\PlayerShadowRaycast.cs" />
     <Compile Include="Assets\Scripts\SafetyNet.cs" />
     <Compile Include="Assets\Scripts\SequenceOperator.cs" />
     <Compile Include="Assets\Scripts\SpringSimulation.cs" />
     <Compile Include="Assets\Scripts\SwitchManager.cs" />
+    <Compile Include="Assets\Scripts\TriggerContactingOrNot.cs" />
     <None Include="Assets\ExtraAssets\Textures\wood_pattern\readme.txt" />
     <None Include="Assets\ExtraAssets\Projectors\Guidelines.txt" />
     <None Include="Assets\ExtraAssets\Textures\wood-patterns-PIXEDEN\license-README-FIRST.txt" />
