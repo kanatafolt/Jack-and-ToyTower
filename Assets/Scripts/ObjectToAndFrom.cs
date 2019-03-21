@@ -40,8 +40,6 @@ public class ObjectToAndFrom : MonoBehaviour
 
     private void Start()
     {
-        rb = (GetComponent<Rigidbody>() != null) ? GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
-        rb.isKinematic = true;                                                                                          //ステージオブジェクトはすべて物理演算の干渉を受けない(isKinematic)
         gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
         audioSource = gameObject.AddComponent<AudioSource>();
@@ -59,7 +57,14 @@ public class ObjectToAndFrom : MonoBehaviour
         if (!isOn)
         {
             //共通起動条件：タワーの出現が完了する
-            if (gameManager.towerAppearanced) isOn = true;
+            if (gameManager.towerAppearanced)
+            {
+                isOn = true;
+
+                //初回起動処理：対象オブジェクトにRigidbodyを付与または取得する
+                rb = (GetComponent<Rigidbody>() != null) ? GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
+                rb.isKinematic = true;
+            }
         }
 
         if (isOn && !pausing)

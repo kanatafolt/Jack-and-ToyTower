@@ -2690,7 +2690,7 @@ MonoBehaviour:
     pitch: 0.5
   earthQuakingSE:
     clip: {fileID: 8300000, guid: 841fc1e28b40032458c95a4458bca291, type: 3}
-    volume: 0.2
+    volume: 0.4
     pitch: 1
 --- !u!82 &449746978
 AudioSource:
@@ -9801,15 +9801,15 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 0965f4611873f4848b353e61c09cfa02, type: 2}
-    - target: {fileID: 8332832129272929942, guid: c479e149394bb014980967748f0cb81e,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -5.35
-      objectReference: {fileID: 0}
     - target: {fileID: 8332832129272930153, guid: c479e149394bb014980967748f0cb81e,
         type: 3}
       propertyPath: m_Material
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8332832129272929942, guid: c479e149394bb014980967748f0cb81e,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5.35
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c479e149394bb014980967748f0cb81e, type: 3}
@@ -15846,17 +15846,17 @@ PrefabInstance:
     - target: {fileID: 725796159075299214, guid: 09d8e44f943e6d344a69ab77bd910c1e,
         type: 3}
       propertyPath: tiltRotateAngle
-      value: 90
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 725796159075299214, guid: 09d8e44f943e6d344a69ab77bd910c1e,
         type: 3}
       propertyPath: isInfinity
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 725796159075299214, guid: 09d8e44f943e6d344a69ab77bd910c1e,
         type: 3}
       propertyPath: intervalTime
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 09d8e44f943e6d344a69ab77bd910c1e, type: 3}
@@ -15986,7 +15986,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   switchObj: {fileID: 1590897427}
-  finishTime: 5
+  finishTime: 5.01
 --- !u!114 &2103226802
 MonoBehaviour:
   m_ObjectHideFlags: 0

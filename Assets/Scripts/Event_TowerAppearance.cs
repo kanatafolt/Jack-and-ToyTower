@@ -66,6 +66,7 @@ public class Event_TowerAppearance : MonoBehaviour
             {
                 //イベント演出終了
                 elapsedTime = finishTime;
+                GameObject.Find("ToyTower").transform.position = new Vector3(0.0f, 6.0f, 0.0f);
                 colSwitcher.SetCollisionOn();
                 player.GetComponent<PlayerCharacterController>().enableInput = true;
                 GameObject.Find("GameManager").GetComponent<MainGameManager>().towerAppearanced = true;

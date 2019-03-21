@@ -36,6 +36,7 @@ public class SequenceOperator : MonoBehaviour
     private float elapsedTime, prevElapsedTime;
     private float finishTime;
     [SerializeField] bool quakeEffect = false;
+    private bool hasRigidbody = false;              //動作中のみRigidbodyを付与する
 
     private AudioManager audioManager;
 
@@ -62,12 +63,10 @@ public class SequenceOperator : MonoBehaviour
         {
             if (seq[i].trans != null)
             {
-                seq[i].rb = (seq[i].trans.gameObject.GetComponent<Rigidbody>() != null) ? seq[i].trans.gameObject.GetComponent<Rigidbody>() : seq[i].trans.gameObject.AddComponent<Rigidbody>();
-                seq[i].rb.isKinematic = true;                                                                                   //ステージオブジェクトはすべて物理演算の干渉を受けない(isKinematic)
                 seq[i].rotPivot = seq[i].rotDiff.normalized;
                 seq[i].rotAngle = seq[i].rotDiff.magnitude;
-                seq[i].rb.position = seq[i].trans.TransformDirection(-seq[i].moveDiff) + seq[i].rb.position;
-                seq[i].rb.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].rb.rotation;
+                seq[i].trans.position = seq[i].trans.TransformDirection(-seq[i].moveDiff) + seq[i].trans.position;
+                seq[i].trans.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].trans.rotation;
                 seq[i].sequenced = true;
                 seq[i].quakeDiff = Vector3.zero;
             }
@@ -83,9 +82,16 @@ public class SequenceOperator : MonoBehaviour
 
         if (elapsedTime != prevElapsedTime)
         {
-            //シークエンス動作中の処理
-            if (prevElapsedTime <= 0.0f && elapsedTime > 0.0f)
+            if (!hasRigidbody)
             {
+                //初回起動処理：シークエンス対象オブジェクトにRigidbodyを付与あるいは取得する
+                for (int i = 0; i < seq.Length; i++)
+                {
+                    seq[i].rb = (seq[i].trans.gameObject.GetComponent<Rigidbody>() != null) ? seq[i].trans.gameObject.GetComponent<Rigidbody>() : seq[i].trans.gameObject.AddComponent<Rigidbody>();
+                    seq[i].rb.isKinematic = true;
+                }
+                hasRigidbody = true;
+
                 //振動させる場合音を鳴らす
                 if (quakeEffect)
                 {
@@ -94,6 +100,7 @@ public class SequenceOperator : MonoBehaviour
                 }
             }
 
+            //シークエンス動作中の処理
             for (int i = 0; i < seq.Length; i++)
             {
                 //各ステージオブジェクトを時間差で展開していく
@@ -132,17 +139,19 @@ public class SequenceOperator : MonoBehaviour
                             //振動させる場合：振動処理
                             qd = -seq[i].quakeDiff;
                             seq[i].quakeDiff = (Vector3.right * (seqElapsedTime % 0.1f - 0.05f) / 0.05f + Vector3.forward * (seqElapsedTime % 0.15f - 0.075f) / 0.075f) * 0.2f;
-                            qd += seq[i].quakeDiff;
+                            if (seqElapsedTime > 0.0f && seqElapsedTime < openTime)
+                            {
+                                qd += seq[i].quakeDiff;
+                            }
                         }
 
                         seq[i].rb.MovePosition(seq[i].trans.TransformDirection(seq[i].moveDiff * deltaMoveRate) + seq[i].rb.position + qd);
                         seq[i].rb.MoveRotation(Quaternion.AngleAxis(seq[i].rotAngle * deltaMoveRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].rb.rotation);
 
-                        if ((seqElapsedTime <= 0.0f || seqElapsedTime >= openTime) && !seq[i].sequenced)
+                        if (seqElapsedTime <= 0.0f || seqElapsedTime >= openTime)
                         {
                             //シークエンスが完了したとき
                             seq[i].sequenced = true;
-                            if (quakeEffect) seq[i].rb.MovePosition(seq[i].rb.position - seq[i].quakeDiff);
                             if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = false;
 
                             //シークエンス完了音を鳴らす
@@ -155,6 +164,19 @@ public class SequenceOperator : MonoBehaviour
 
             if (elapsedTime >= finishTime) elapsedTime = finishTime;
             if (elapsedTime <= 0.0f) elapsedTime = 0.0f;
+        }
+
+        if (prevElapsedTime == elapsedTime && hasRigidbody)
+        {
+            //要らなくなったRigidbodyを破棄する処理
+            for (int i = 0; i < seq.Length; i++)
+            {
+                if (seq[i].toAndFrom == null)
+                {
+                    Destroy(seq[i].rb);
+                }
+            }
+            hasRigidbody = false;
         }
     }
 }
