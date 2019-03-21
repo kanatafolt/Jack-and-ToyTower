@@ -24,19 +24,19 @@ public class SequenceOperator : MonoBehaviour
         public Transform trans;                                 //展開対象オブジェクト
         public Vector3 moveDiff;                                //移動量
         public Vector3 rotDiff;                                 //回転量
-        public bool isToAndFromObject;                          //ObjectToAndFromによって制御されるオブジェクトかどうか
-        [HideInInspector] public Vector3 defaultPos;            //元々のpositionを保持
-        [HideInInspector] public Quaternion defaultRot;         //元々のrotationを保持
+        public ObjectToAndFrom toAndFrom;                       //展開対象がObjectToAndFromによって制御されているなら一時停止させる
+        [HideInInspector] public Rigidbody rb;                  //オブジェクトごとのRigidbody
         [HideInInspector] public Vector3 rotPivot;              //rotDiffから回転軸を分離
         [HideInInspector] public float rotAngle;                //rotDiffから回転角度を分離
         [HideInInspector] public bool sequenced;                //シークエンス完了時のイベントを管理する
+        [HideInInspector] public Vector3 quakeDiff;             //振動させる場合、その振動量
     }
     [SerializeField] SequenceObjects[] seq = new SequenceObjects[1];
 
     private float elapsedTime, prevElapsedTime;
     private float finishTime;
-
     [SerializeField] bool quakeEffect = false;
+
     private AudioManager audioManager;
 
     private void Reset()
@@ -57,20 +57,24 @@ public class SequenceOperator : MonoBehaviour
 
         finishTime = openInterval * (seq.Length - 1) + openTime;
 
-        //ステージ設計時には展開後の状態で置かれているため、最初にシークエンスを逆向きに行う
+        //シークエンス初期化処理：ステージ設計時には展開後の状態で置かれているため、最初にシークエンスを逆向きに行う
         for (int i = 0; i < seq.Length; i++)
         {
             if (seq[i].trans != null)
             {
+                seq[i].rb = (seq[i].trans.gameObject.GetComponent<Rigidbody>() != null) ? seq[i].trans.gameObject.GetComponent<Rigidbody>() : seq[i].trans.gameObject.AddComponent<Rigidbody>();
+                seq[i].rb.isKinematic = true;                                                                                   //ステージオブジェクトはすべて物理演算の干渉を受けない(isKinematic)
                 seq[i].rotPivot = seq[i].rotDiff.normalized;
                 seq[i].rotAngle = seq[i].rotDiff.magnitude;
-                seq[i].trans.position = seq[i].trans.position + seq[i].trans.TransformDirection(-seq[i].moveDiff);
-                seq[i].trans.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].trans.rotation;
+                seq[i].rb.position = seq[i].trans.TransformDirection(-seq[i].moveDiff) + seq[i].rb.position;
+                seq[i].rb.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].rb.rotation;
+                seq[i].sequenced = true;
+                seq[i].quakeDiff = Vector3.zero;
             }
         }
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         prevElapsedTime = elapsedTime;
 
@@ -79,18 +83,9 @@ public class SequenceOperator : MonoBehaviour
 
         if (elapsedTime != prevElapsedTime)
         {
-            if (prevElapsedTime == 0.0f)
+            //シークエンス動作中の処理
+            if (prevElapsedTime <= 0.0f && elapsedTime > 0.0f)
             {
-                //初回起動時のみ初期位置を保存する
-                for (int i = 0; i < seq.Length; i++)
-                {
-                    if (seq[i].trans != null)
-                    {
-                        seq[i].defaultPos = seq[i].trans.position;
-                        seq[i].defaultRot = seq[i].trans.rotation;
-                    }
-                }
-
                 //振動させる場合音を鳴らす
                 if (quakeEffect)
                 {
@@ -99,42 +94,62 @@ public class SequenceOperator : MonoBehaviour
                 }
             }
 
-            //各ステージオブジェクトを時間差で展開していく
             for (int i = 0; i < seq.Length; i++)
             {
+                //各ステージオブジェクトを時間差で展開していく
                 if (seq[i].trans != null)
                 {
-                    float diffRate = (elapsedTime - openInterval * i) / openTime;
-                    if (diffRate > 1.0f) diffRate = 1.0f;
-                    if (diffRate < 0.0f) diffRate = 0.0f;
+                    float seqElapsedTime = elapsedTime - openInterval * i;                                      //シークエンスごとの起動時間からの累積時間を算出する
 
-                    if (!seq[i].isToAndFromObject)
+                    if (seqElapsedTime > 0.0f && seqElapsedTime < openTime)
                     {
-                        seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);
-                        seq[i].trans.rotation = Quaternion.AngleAxis(seq[i].rotAngle * diffRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].defaultRot;
-                    }
-                    else
-                    {
-                        //シークエンス対象がToAndFromオブジェクトの場合
+                        //シークエンスごとの稼働時間内に入ったらシークエンス完了フラグをfalseにする
+                        seq[i].sequenced = false;
+                        if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = true;
                     }
 
                     if (!seq[i].sequenced)
                     {
-                        if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.right) * 0.2f * (elapsedTime % 0.1f - 0.05f) / 0.05f;         //振動させる場合横揺れ
-                        if (quakeEffect) seq[i].trans.position += seq[i].trans.TransformDirection(Vector3.forward) * 0.2f * (elapsedTime % 0.15f - 0.075f) / 0.075f;    //振動させる場合奥揺れ
+                        //シークエンスごとの稼働時間内なら
+                        float deltaMoveRate = 0.0f;
+                        if (elapsedTime > prevElapsedTime)
+                        {
+                            deltaMoveRate = Time.deltaTime;
+                            if (seqElapsedTime < Time.deltaTime) deltaMoveRate = seqElapsedTime;                                    //シークエンス初回フレームで余分に動かないようにする
+                            if (seqElapsedTime > openTime) deltaMoveRate = Time.deltaTime - (seqElapsedTime - openTime);            //シークエンス最終フレームで余分に動かないようにする
+                        }
+                        if (elapsedTime < prevElapsedTime)
+                        {
+                            deltaMoveRate = -Time.deltaTime;
+                            if (openTime - seqElapsedTime < Time.deltaTime) deltaMoveRate = -(openTime - seqElapsedTime);           //逆シークエンス初回フレームで余分に動かないようにする
+                            if (seqElapsedTime < 0.0f) deltaMoveRate = -Time.deltaTime - seqElapsedTime;                            //逆シークエンス最終フレームで余分に動かないようにする
+                        }
+                        deltaMoveRate = deltaMoveRate / openTime;
+
+                        Vector3 qd = Vector3.zero;
+                        if (quakeEffect)
+                        {
+                            //振動させる場合：振動処理
+                            qd = -seq[i].quakeDiff;
+                            seq[i].quakeDiff = (Vector3.right * (seqElapsedTime % 0.1f - 0.05f) / 0.05f + Vector3.forward * (seqElapsedTime % 0.15f - 0.075f) / 0.075f) * 0.2f;
+                            qd += seq[i].quakeDiff;
+                        }
+
+                        seq[i].rb.MovePosition(seq[i].trans.TransformDirection(seq[i].moveDiff * deltaMoveRate) + seq[i].rb.position + qd);
+                        seq[i].rb.MoveRotation(Quaternion.AngleAxis(seq[i].rotAngle * deltaMoveRate, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].rb.rotation);
+
+                        if ((seqElapsedTime <= 0.0f || seqElapsedTime >= openTime) && !seq[i].sequenced)
+                        {
+                            //シークエンスが完了したとき
+                            seq[i].sequenced = true;
+                            if (quakeEffect) seq[i].rb.MovePosition(seq[i].rb.position - seq[i].quakeDiff);
+                            if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = false;
+
+                            //シークエンス完了音を鳴らす
+                            AudioManager.SEData seData = audioManager.sequenceFinishSE;
+                            if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, seq[i].trans.position, seData.volume);
+                        }
                     }
-
-                    if (diffRate == 1.0f && !seq[i].sequenced)
-                    {
-                        if (quakeEffect) seq[i].trans.position = seq[i].defaultPos + seq[i].trans.TransformDirection(seq[i].moveDiff * diffRate);       //振動させた場合座標を正しい位置に戻して終わる
-                        seq[i].sequenced = true;
-
-                        //シークエンス完了音を鳴らす
-                        AudioManager.SEData seData = audioManager.sequenceFinishSE;
-                        if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, seq[i].trans.position, seData.volume);
-                    }
-
-                    if (diffRate > 0.0f && diffRate < 1.0f) seq[i].sequenced = false;
                 }
             }
 

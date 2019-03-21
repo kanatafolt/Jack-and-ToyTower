@@ -17,10 +17,10 @@ using UnityEngine;
 
 public class ObjectToAndFrom : MonoBehaviour
 {
-    private bool isOn = false;          //falseのときオブジェクトの運動は停止する
-    private bool isStarted = false;     //起動後、初回処理を行ったかどうか
-    private bool isReturn = false;      //falseなら往路、trueなら復路
-    private bool isInterval = false;    //インターバル(往路・復路間の待機時間)中かどうか
+    private bool isOn = false;                              //falseのときオブジェクトの運動は停止する
+    private bool isReturn = false;                          //falseなら往路、trueなら復路
+    private bool isInterval = false;                        //インターバル(往路・復路間の待機時間)中かどうか
+    [HideInInspector] public bool pausing = false;          //trueのときオブジェクトの運動を一時停止させる
 
     [SerializeField] bool isInfinity = false;                       //片道無限運動設定：trueのとき、isReturnに関わらず常に往路方向へ進む
     [SerializeField] float leftAndRightRotateAngle = 0.0f;          //左右方向への回転量(world.up軸回転)
@@ -33,8 +33,6 @@ public class ObjectToAndFrom : MonoBehaviour
 
     private Rigidbody rb;
     private float elapsedTime;
-    private Vector3 initialPosition, toPosition;
-    private Quaternion initialRotation;
 
     private MainGameManager gameManager;
     private AudioManager audioManager;
@@ -42,15 +40,11 @@ public class ObjectToAndFrom : MonoBehaviour
 
     private void Start()
     {
-        rb = gameObject.AddComponent<Rigidbody>();
+        rb = (GetComponent<Rigidbody>() != null) ? GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = true;                                                                                          //ステージオブジェクトはすべて物理演算の干渉を受けない(isKinematic)
         gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
         audioSource = gameObject.AddComponent<AudioSource>();
-
-        //ステージオブジェクトはすべて物理演算の干渉を受けない(isKinematic)
-        rb.isKinematic = true;
-        //rb.interpolation = RigidbodyInterpolation.Interpolate;
-        //rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
         if (delayTime > 0.0f)
         {
@@ -60,7 +54,7 @@ public class ObjectToAndFrom : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (!isOn)
         {
@@ -68,17 +62,8 @@ public class ObjectToAndFrom : MonoBehaviour
             if (gameManager.towerAppearanced) isOn = true;
         }
 
-        if (isOn)
+        if (isOn && !pausing)
         {
-            if (!isStarted)
-            {
-                //起動後、初回のみ行う処理　ローカル空間での初期位置と目標位置を設定
-                initialPosition = rb.position;
-                initialRotation = rb.rotation;
-                toPosition = initialPosition + transform.TransformDirection(Vector3.up * upAndDownMoveDistance + Vector3.forward * forwardAndBackMoveDistance);
-                isStarted = true;
-            }
-
             if (isInterval)
             {
                 //インターバル中の処理
@@ -94,32 +79,29 @@ public class ObjectToAndFrom : MonoBehaviour
             if (!isInterval)
             {
                 //移動中の処理
-                if (!isReturn) elapsedTime += Time.deltaTime;
-                if (isReturn) elapsedTime -= Time.deltaTime;
+                float deltaMoveRate = 0.0f;
+                if (!isReturn)
+                {
+                    elapsedTime += Time.deltaTime;
+                    deltaMoveRate = (elapsedTime <= moveTime) ? Time.deltaTime : Time.deltaTime - (elapsedTime - moveTime);
+                }
+                else
+                {
+                    elapsedTime -= Time.deltaTime;
+                    deltaMoveRate = (elapsedTime >= 0.0f) ? -Time.deltaTime : -Time.deltaTime - elapsedTime;
+                }
+                deltaMoveRate = deltaMoveRate / moveTime;
 
-                float timeRate = elapsedTime / moveTime;
-                if (timeRate <= 0.0f) timeRate = 0.0f;
-                if (timeRate >= 1.0f) timeRate = 1.0f;
-
-                //移動・回転処理
-                rb.MovePosition(initialPosition + (toPosition - initialPosition) * timeRate);
-                rb.MoveRotation(Quaternion.AngleAxis(tiltRotateAngle * timeRate, transform.forward) * Quaternion.AngleAxis(leftAndRightRotateAngle * timeRate, Vector3.up) * initialRotation);
+                //移動・回転を行う
+                rb.MovePosition(transform.TransformDirection(Vector3.up * upAndDownMoveDistance + Vector3.forward * forwardAndBackMoveDistance) * deltaMoveRate + rb.position);
+                rb.MoveRotation(Quaternion.AngleAxis(tiltRotateAngle * deltaMoveRate, transform.forward) * Quaternion.AngleAxis(leftAndRightRotateAngle * deltaMoveRate, Vector3.up) * rb.rotation);
 
                 if (elapsedTime <= 0.0f || elapsedTime >= moveTime)
                 {
                     //往路・復路で目標位置を超えたら
-                    isReturn = (isReturn) ? false : true;
+                    isReturn = (isReturn || isInfinity) ? false : true;
                     isInterval = true;
                     elapsedTime = 0.0f;
-
-                    if (isInfinity)
-                    {
-                        //無限運動の場合：現在の位置を起点としてさらに往路方向への運動を続ける
-                        initialPosition = rb.position;
-                        initialRotation = rb.rotation;
-                        toPosition = initialPosition + transform.TransformDirection(Vector3.up * upAndDownMoveDistance + Vector3.forward * forwardAndBackMoveDistance);
-                        isReturn = false;
-                    }
 
                     if (!isInfinity || intervalTime > 0.0f)
                     {
