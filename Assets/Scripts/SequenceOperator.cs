@@ -48,7 +48,7 @@ public class SequenceOperator : MonoBehaviour
     private void OnDrawGizmos()
     {
         //デバッグ用：シーン編集時、シークエンス対象のオブジェクトに目印を表示する
-        Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.3f);
+        Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
         for (int i = 0; i < seq.Length; i++) if (seq[i].trans != null) Gizmos.DrawSphere(seq[i].trans.position + seq[i].trans.TransformDirection(Vector3.forward * -7.0f + Vector3.up * 0.25f), 0.45f);
     }
 

@@ -11,6 +11,8 @@
 //　　　同様にcollision detection(衝突判定補間)モードも負荷を考えて未設定　壁抜けなどが問題になったら改めて考える
 ////
 
+#pragma warning disable 0649    //変数が初期化されていないという警告を無視する
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,6 +25,7 @@ public class ObjectToAndFrom : MonoBehaviour
     [HideInInspector] public bool pausing = false;          //trueのときオブジェクトの運動を一時停止させる
 
     [SerializeField] bool isInfinity = false;                       //片道無限運動設定：trueのとき、isReturnに関わらず常に往路方向へ進む
+    [SerializeField] SwitchManager relianceSwitch;                  //スイッチへの依存：nullではない場合、SwitchのisOnによって起動する
     [SerializeField] float leftAndRightRotateAngle = 0.0f;          //左右方向への回転量(world.up軸回転)
     [SerializeField] float upAndDownMoveDistance = 0.0f;            //上下方向への移動量(local.up方向並進)
     [SerializeField] float forwardAndBackMoveDistance = 0.0f;       //前後方向への移動量(local.forward方向並進)
@@ -59,11 +62,15 @@ public class ObjectToAndFrom : MonoBehaviour
             //共通起動条件：タワーの出現が完了する
             if (gameManager.towerAppearanced)
             {
-                isOn = true;
+                if (relianceSwitch == null) isOn = true;            //スイッチへの依存がない場合：すぐに動作開始する
+                else if(relianceSwitch.isOn) isOn = true;           //スイッチへの依存がある場合：スイッチがオンになったら動作開始する
 
-                //初回起動処理：対象オブジェクトにRigidbodyを付与または取得する
-                rb = (GetComponent<Rigidbody>() != null) ? GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
-                rb.isKinematic = true;
+                if (isOn)
+                {
+                    //初回起動処理：対象オブジェクトにRigidbodyを付与または取得する
+                    rb = (GetComponent<Rigidbody>() != null) ? GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
+                    rb.isKinematic = true;
+                }
             }
         }
 
