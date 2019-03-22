@@ -12,21 +12,42 @@ using UnityEngine;
 public class MazeSwitchMaster : MonoBehaviour
 {
     [SerializeField] SequenceOperator relianceSequence;
+    [SerializeField] SequenceOperator groupASequence;
     [SerializeField] SwitchManager[] groupA = new SwitchManager[1];
     [SerializeField] SwitchManager[] groupB = new SwitchManager[1];
 
-    private bool controlEnabled = false;            //タワーが起動するまでは制御を開始しない
+    private MainGameManager gameManager;
+    private bool firstSwitching = false;            //初回のスイッチ操作を行ったかどうか
+    private bool controlEnabled = false;            //シークエンス後、スイッチのinitialPositionを再設定したかどうか
     private bool groupAIsOn = true;
     private bool prevGroupAIsOn = true;             //スイッチが感知された時にForceSwitchingを一度だけ行う
+
+    private void Start()
+    {
+        gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
+    }
 
     private void Update()
     {
         if (!controlEnabled)
         {
-            if (relianceSequence.sequenceFinished)
+            if (!firstSwitching)
             {
-                controlEnabled = true;
-                for (int i = 0; i < groupA.Length; i++) groupA[i].ForceSwitching(true);
+                if (gameManager.towerAppearanced)
+                {
+                    firstSwitching = true;
+                    groupASequence.soundOn = false;
+                    for (int i = 0; i < groupA.Length; i++) groupA[i].ForceSwitching(true);
+                }
+            }
+            else
+            {
+                if (relianceSequence.sequenceFinished)
+                {
+                    groupASequence.soundOn = true;
+                    controlEnabled = true;
+                    for (int i = 0; i < groupA.Length; i++) groupA[i].InitialPositionUpdate();
+                }
             }
         }
 

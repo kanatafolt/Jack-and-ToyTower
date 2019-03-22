@@ -20,6 +20,7 @@ public class SequenceOperator : MonoBehaviour
     [SerializeField] float openTime = 0.4f;                         //展開時間
     [SerializeField] float openInterval = 0.2f;                     //展開間隔
     [HideInInspector] public bool sequenceFinished = false;         //シークエンスが完了したかどうか
+    [HideInInspector] public bool soundOn = true;                   //falseの場合SEが鳴らない
 
     [System.Serializable] [SerializeField] struct SequenceObjects {
         public Transform trans;                                 //展開対象オブジェクト
@@ -98,7 +99,7 @@ public class SequenceOperator : MonoBehaviour
                 hasRigidbody = true;
 
                 //振動させる場合音を鳴らす
-                if (quakeEffect)
+                if (quakeEffect && soundOn)
                 {
                     AudioManager.SEData seData = audioManager.earthQuakingSE;
                     if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, transform.position, seData.volume);
@@ -160,8 +161,11 @@ public class SequenceOperator : MonoBehaviour
                             if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = false;
 
                             //シークエンス完了音を鳴らす
-                            AudioManager.SEData seData = audioManager.sequenceFinishSE;
-                            if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, seq[i].trans.position, seData.volume);
+                            if (soundOn)
+                            {
+                                AudioManager.SEData seData = audioManager.sequenceFinishSE;
+                                if (seData.clip != null) AudioSource.PlayClipAtPoint(seData.clip, seq[i].trans.position, seData.volume);
+                            }
                         }
                     }
                 }

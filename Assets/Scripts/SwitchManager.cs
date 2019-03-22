@@ -139,7 +139,7 @@ public class SwitchManager : MonoBehaviour
         }
     }
 
-    public void ForceSwitching(bool switchOn)
+    public void ForceSwitching (bool switchOn)
     {
         if (switchOn)
         {
@@ -154,6 +154,24 @@ public class SwitchManager : MonoBehaviour
             switched = true;
             currentPosition = transform.position;
             currentEmission = ren.material.GetColor("_EmissionColor");
+        }
+    }
+
+    public void InitialPositionUpdate ()
+    {
+        if (!isOn)
+        {
+            //スイッチがOFFのとき：現在位置をinitialPositionとして、各変数を再度設定する
+            initialPosition = transform.position;
+            toPosition = initialPosition + transform.TransformDirection(Vector3.down * moveDiff);
+            currentPosition = initialPosition;
+        }
+        else
+        {
+            //スイッチがONのとき：現在位置をtoPositionとして、各変数を再度設定する
+            toPosition = transform.position;
+            initialPosition = toPosition + transform.TransformDirection(Vector3.up * moveDiff);
+            currentPosition = toPosition;
         }
     }
 }
