@@ -36,9 +36,11 @@ public class SequenceOperator : MonoBehaviour
     private float elapsedTime, prevElapsedTime;
     private float finishTime;
     [SerializeField] bool quakeEffect = false;
+    [SerializeField] float quakeWidth = 0.0f;
     private bool hasRigidbody = false;              //動作中のみRigidbodyを付与する
 
     private AudioManager audioManager;
+    private AudioSource quakeAudioSource;
 
     private void Reset()
     {
@@ -49,7 +51,7 @@ public class SequenceOperator : MonoBehaviour
     {
         //デバッグ用：シーン編集時、シークエンス対象のオブジェクトに目印を表示する
         Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
-        for (int i = 0; i < seq.Length; i++) if (seq[i].trans != null) Gizmos.DrawSphere(seq[i].trans.position + seq[i].trans.TransformDirection(Vector3.forward * -7.0f + Vector3.up * 0.25f), 0.45f);
+        for (int i = 0; i < seq.Length; i++) if (seq[i].trans != null) Gizmos.DrawSphere(seq[i].trans.position, 0.45f);
     }
 
     private void Start()
@@ -89,6 +91,8 @@ public class SequenceOperator : MonoBehaviour
                 {
                     seq[i].rb = (seq[i].trans.gameObject.GetComponent<Rigidbody>() != null) ? seq[i].trans.gameObject.GetComponent<Rigidbody>() : seq[i].trans.gameObject.AddComponent<Rigidbody>();
                     seq[i].rb.isKinematic = true;
+
+                    if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = true;
                 }
                 hasRigidbody = true;
 
@@ -138,7 +142,7 @@ public class SequenceOperator : MonoBehaviour
                         {
                             //振動させる場合：振動処理
                             qd = -seq[i].quakeDiff;
-                            seq[i].quakeDiff = (Vector3.right * (seqElapsedTime % 0.1f - 0.05f) / 0.05f + Vector3.forward * (seqElapsedTime % 0.15f - 0.075f) / 0.075f) * 0.2f;
+                            seq[i].quakeDiff = (Vector3.right * (seqElapsedTime % 0.1f - 0.05f) / 0.05f + Vector3.forward * (seqElapsedTime % 0.15f - 0.075f) / 0.075f) * quakeWidth;
                             if (seqElapsedTime > 0.0f && seqElapsedTime < openTime)
                             {
                                 qd += seq[i].quakeDiff;
