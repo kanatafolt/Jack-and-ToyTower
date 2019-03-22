@@ -44,7 +44,7 @@ public class SwitchManager : MonoBehaviour
         if (collision.transform.tag == "player" && !isOn && elapsedTime / CHANGE_TIME <= 0.8f)
         {
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
-            SwitchOn();
+            SwitchOn(true);
         }
     }
 
@@ -53,13 +53,13 @@ public class SwitchManager : MonoBehaviour
         if (collision.transform.tag == "player" && !isOn && elapsedTime / CHANGE_TIME <= 0.5f)
         {
             //スイッチにプレイヤーが触れたとき：スイッチをONにする
-            SwitchOn();
+            SwitchOn(true);
         }
     }
 
     private void Update()
     {
-        if (debugManager != null) if (debugManager.suparForceOn && !isOn && elapsedTime / CHANGE_TIME <= 0.1f) SwitchOn();
+        if (debugManager != null) if (debugManager.suparForceOn && !isOn && elapsedTime / CHANGE_TIME <= 0.1f) SwitchOn(true);
 
         if (isOn)
         {
@@ -95,9 +95,9 @@ public class SwitchManager : MonoBehaviour
             }
         }
 
-        if (!isOn && timeLimit > 0.0f && switched)
+        if (!isOn && switched)
         {
-            //スイッチがOFFのとき、制限時間が設定されており、スイッチの逆変化が完了していないとき：スイッチの逆変化処理を行う
+            //スイッチがOFFのとき、スイッチの逆変化が完了していないなら：スイッチの逆変化処理を行う
             elapsedTime -= Time.deltaTime;
 
             if (elapsedTime <= 0.0f)
@@ -114,7 +114,7 @@ public class SwitchManager : MonoBehaviour
         }
     }
 
-    private void SwitchOn ()
+    private void SwitchOn (bool soundOn)
     {
         //スイッチがONになる処理
         if (elapsedTime == 0.0f)
@@ -129,10 +129,31 @@ public class SwitchManager : MonoBehaviour
         currentPosition = transform.position;
         currentEmission = ren.material.GetColor("_EmissionColor");
 
-        //スイッチがONになる音
-        AudioManager.SEData seData = audioManager.switchOnSE;
-        audioSource.volume = seData.volume;
-        audioSource.pitch = seData.pitch;
-        if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
+        if (soundOn)
+        {
+            //スイッチがONになる音
+            AudioManager.SEData seData = audioManager.switchOnSE;
+            audioSource.volume = seData.volume;
+            audioSource.pitch = seData.pitch;
+            if (seData.clip != null) audioSource.PlayOneShot(seData.clip);
+        }
+    }
+
+    public void ForceSwitching(bool switchOn)
+    {
+        if (switchOn)
+        {
+            //音無しでスイッチをONにする
+            SwitchOn(false);
+        }
+        else
+        {
+            //スイッチをOFFにする
+            elapsedTime = CHANGE_TIME;
+            isOn = false;
+            switched = true;
+            currentPosition = transform.position;
+            currentEmission = ren.material.GetColor("_EmissionColor");
+        }
     }
 }

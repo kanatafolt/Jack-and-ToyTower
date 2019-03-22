@@ -14,11 +14,12 @@ using UnityEngine;
 
 public class SequenceOperator : MonoBehaviour
 {
-    [SerializeField] bool forceOn = false;              //デバッグ用変数：シークエンスを強制的に展開する
+    [SerializeField] bool forceOn = false;                          //デバッグ用変数：シークエンスを強制的に展開する
 
-    [SerializeField] SwitchManager switchObj;           //このスイッチがONになるとシークエンスが展開開始
-    [SerializeField] float openTime = 0.4f;             //展開時間
-    [SerializeField] float openInterval = 0.2f;         //展開間隔
+    [SerializeField] SwitchManager switchObj;                       //このスイッチがONになるとシークエンスが展開開始
+    [SerializeField] float openTime = 0.4f;                         //展開時間
+    [SerializeField] float openInterval = 0.2f;                     //展開間隔
+    [HideInInspector] public bool sequenceFinished = false;         //シークエンスが完了したかどうか
 
     [System.Serializable] [SerializeField] struct SequenceObjects {
         public Transform trans;                                 //展開対象オブジェクト
@@ -166,8 +167,17 @@ public class SequenceOperator : MonoBehaviour
                 }
             }
 
-            if (elapsedTime >= finishTime) elapsedTime = finishTime;
-            if (elapsedTime <= 0.0f) elapsedTime = 0.0f;
+            if (elapsedTime >= finishTime)
+            {
+                sequenceFinished = true;
+                elapsedTime = finishTime;
+            }
+
+            if (elapsedTime <= 0.0f)
+            {
+                sequenceFinished = false;
+                elapsedTime = 0.0f;
+            }
         }
 
         if (prevElapsedTime == elapsedTime && hasRigidbody)

@@ -68,6 +68,7 @@
     <Compile Include="Assets\Scripts\GetScoreObject.cs" />
     <Compile Include="Assets\Scripts\InBorderArea.cs" />
     <Compile Include="Assets\Scripts\MainGameManager.cs" />
+    <Compile Include="Assets\Scripts\MazeSwitchMaster.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\ObjectToAndFrom.cs" />
     <Compile Include="Assets\Scripts\OldScripts\CenterOfMass.cs" />
