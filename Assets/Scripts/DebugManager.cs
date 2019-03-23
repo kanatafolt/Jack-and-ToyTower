@@ -27,6 +27,9 @@ public class DebugManager : MonoBehaviour
     public bool spectatorMode = false;                          //スペクテイターモード
     [SerializeField] bool towerAppearance = true;               //タワーが出現済みの状態でゲームが始まる
 
+    [SerializeField] bool section2LowerSwitchOn = false;                                //セクション2下部のスイッチを全て起動する
+    [SerializeField] GameObject[] section2LowerSwitch = new GameObject[1];              //セクション2下部のスイッチリスト
+
     private KeyCode restartKey = KeyCode.R;
     private KeyCode superForceOnKey = KeyCode.F;
     private KeyCode spectatorKey = KeyCode.E;
@@ -54,6 +57,12 @@ public class DebugManager : MonoBehaviour
         {
             //TowerAppearanceが有効のとき：タワースイッチを無効化する
             GameObject.Find("TowerSwitch(Floor)").SetActive(false);
+        }
+
+        if (section2LowerSwitchOn)
+        {
+            //section2LowerSwitchOnが有効のとき：セクション2下部のスイッチをすべて無効化する
+            for (int i = 0; i < section2LowerSwitch.Length; i++) section2LowerSwitch[i].SetActive(false);
         }
     }
 
