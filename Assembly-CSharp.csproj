@@ -77,6 +77,7 @@
     <Compile Include="Assets\Scripts\ObjectToAndFromMulti.cs" />
     <Compile Include="Assets\Scripts\OldScripts\CenterOfMass.cs" />
     <Compile Include="Assets\Scripts\OldScripts\ObjectMovement.cs" />
+    <Compile Include="Assets\Scripts\ParticlePlayManager.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />
     <Compile Include="Assets\Scripts\PlayerCollisionSwitcher.cs" />
     <Compile Include="Assets\Scripts\PlayerLookAtTracer.cs" />

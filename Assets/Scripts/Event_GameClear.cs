@@ -14,6 +14,7 @@ public class Event_GameClear : MonoBehaviour
 {
     [SerializeField] SwitchManager goalSwitch;
     [SerializeField] ObjectScalePop goalTextPop, scoreBoardPop;
+    [SerializeField] ParticlePlayManager[] particleRigs = new ParticlePlayManager[1];
     [SerializeField] Text clearTimeText, smallScoreText, bigScoreText;
     [SerializeField] Text smallScoreQuantityLabel, bigScoreQuantityLabel;
     private bool cleared = false;
@@ -37,6 +38,11 @@ public class Event_GameClear : MonoBehaviour
             if (elapsedTime == 0.0f)
             {
                 gameManager.gameCleared = true;
+                //クラッカーを起動
+                for (int i = 0; i < particleRigs.Length; i++)
+                {
+                    particleRigs[i].Play();
+                }
 
                 //ゴールの効果音を鳴らす
                 AudioManager.SEData seData = audioManager.clearFanfareSE;
@@ -53,7 +59,6 @@ public class Event_GameClear : MonoBehaviour
                 goalTextPop.popStart = true;
                 scoreBoardPop.popStart = true;
 
-                //クラッカーを起動
 
                 //クリア処理完了フラグを立てる
                 cleared = true;
