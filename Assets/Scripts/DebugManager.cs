@@ -21,12 +21,12 @@ using UnityEngine.SceneManagement;
 
 public class DebugManager : MonoBehaviour
 {
-    [SerializeField] GUISkin skin;                              //デバッグUIのGUIスキン
-    [SerializeField] GameObject spawner;                        //プレイヤーの初期位置
-    public bool suparForceOn = false;                           //スイッチの一括管理
-    public bool spectatorMode = false;                          //スペクテイターモード
-    [SerializeField] bool towerAppearance = true;               //タワーが出現済みの状態でゲームが始まる
-
+    [SerializeField] GUISkin skin;                                                      //デバッグUIのGUIスキン
+    [SerializeField] GameObject spawner;                                                //プレイヤーの初期位置
+    public bool suparForceOn = false;                                                   //スイッチの一括管理
+    public bool spectatorMode = false;                                                  //スペクテイターモード
+    [SerializeField] bool setSpawnPoint = true;                                         //スポーン地点を設定する
+    [SerializeField] bool towerAppearance = true;                                       //タワーが出現済みの状態でゲームが始まる    
     [SerializeField] bool section2LowerSwitchOn = false;                                //セクション2下部のスイッチを全て起動する
     [SerializeField] GameObject[] section2LowerSwitch = new GameObject[1];              //セクション2下部のスイッチリスト
 
@@ -73,8 +73,8 @@ public class DebugManager : MonoBehaviour
         cameraRig = GameObject.Find("CameraRig");
         playerRb = player.GetComponent<Rigidbody>();
 
-        //プレイヤーの初期位置を変更する
-        player.transform.position = spawner.transform.position + Vector3.up * 1.5f;
+        //setSpawnPointが有効のとき：プレイヤーの初期位置を変更する
+        if (setSpawnPoint) player.transform.position = spawner.transform.position + Vector3.up * 1.5f;
 
         if (towerAppearance)
         {

@@ -20,6 +20,8 @@ public class CameraRigRotater : MonoBehaviour
     [SerializeField] InBorderArea leftBorderArea, rightBorderArea;
     private float leftAngleDiff, rightAngleDiff, upperHeightDiff, lowerHeightDiff;
 
+    [HideInInspector] public bool cameraHeightFixed = false;
+
     private void Reset()
     {
         player = GameObject.Find("Jack").GetComponent<Transform>();
@@ -54,29 +56,32 @@ public class CameraRigRotater : MonoBehaviour
             transform.Rotate(Vector3.up * rightAngleDiff * TOWER_ROTATE_RATE);
         }
 
-        //UpperBorderを越えている(負のとき)：CameraRigを上昇させる
-        if (upperHeightDiff > 0.0f)
+        if (!cameraHeightFixed)
         {
-            if ((Vector3.up * upperHeightDiff * TOWER_ELEVATE_RATE + transform.position).y < CAMERA_TOP_HEIGHT)
+            //UpperBorderを越えている(負のとき)：CameraRigを上昇させる
+            if (upperHeightDiff > 0.0f)
             {
-                transform.position += Vector3.up * upperHeightDiff * TOWER_ELEVATE_RATE;
+                if ((Vector3.up * upperHeightDiff * TOWER_ELEVATE_RATE + transform.position).y < CAMERA_TOP_HEIGHT)
+                {
+                    transform.position += Vector3.up * upperHeightDiff * TOWER_ELEVATE_RATE;
+                }
+                else
+                {
+                    transform.position = new Vector3(transform.position.x, CAMERA_TOP_HEIGHT, transform.position.z);
+                }
             }
-            else
-            {
-                transform.position = new Vector3(transform.position.x, CAMERA_TOP_HEIGHT, transform.position.z);
-            }
-        }
 
-        //LowerBorderを越えている(正のとき)：CameraRigを下降させる
-        if (lowerHeightDiff < 0.0f)
-        {
-            if ((Vector3.up * lowerHeightDiff * TOWER_ELEVATE_RATE + transform.position).y > CAMERA_BOTTOM_HEIGHT)
+            //LowerBorderを越えている(正のとき)：CameraRigを下降させる
+            if (lowerHeightDiff < 0.0f)
             {
-                transform.position += Vector3.up * lowerHeightDiff * TOWER_ELEVATE_RATE;
-            }
-            else
-            {
-                transform.position = new Vector3(transform.position.x, CAMERA_BOTTOM_HEIGHT, transform.position.z);
+                if ((Vector3.up * lowerHeightDiff * TOWER_ELEVATE_RATE + transform.position).y > CAMERA_BOTTOM_HEIGHT)
+                {
+                    transform.position += Vector3.up * lowerHeightDiff * TOWER_ELEVATE_RATE;
+                }
+                else
+                {
+                    transform.position = new Vector3(transform.position.x, CAMERA_BOTTOM_HEIGHT, transform.position.z);
+                }
             }
         }
 

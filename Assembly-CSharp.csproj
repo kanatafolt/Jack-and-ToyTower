@@ -63,12 +63,15 @@
     <Compile Include="Assets\Scripts\AudioManager.cs" />
     <Compile Include="Assets\Scripts\CameraRigRotater.cs" />
     <Compile Include="Assets\Scripts\DebugManager.cs" />
+    <Compile Include="Assets\Scripts\Event_GameClear.cs" />
     <Compile Include="Assets\Scripts\Event_TowerAppearance.cs" />
+    <Compile Include="Assets\Scripts\Event_TowerTopCameraPan.cs" />
     <Compile Include="Assets\Scripts\GenerateObjectEdge.cs" />
     <Compile Include="Assets\Scripts\GetScoreObject.cs" />
     <Compile Include="Assets\Scripts\InBorderArea.cs" />
     <Compile Include="Assets\Scripts\MainGameManager.cs" />
     <Compile Include="Assets\Scripts\MazeSwitchMaster.cs" />
+    <Compile Include="Assets\Scripts\ObjectScalePop.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\ObjectToAndFrom.cs" />
     <Compile Include="Assets\Scripts\ObjectToAndFromMulti.cs" />

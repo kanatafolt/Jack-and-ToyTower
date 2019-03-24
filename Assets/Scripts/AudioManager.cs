@@ -16,12 +16,14 @@ public class AudioManager : MonoBehaviour
         public float pitch;
     }
 
+    //プレイヤー関係
     public SEData hopWalkSE;
     public SEData jumpSE;
     public SEData randingSE;
+
+    //ギミック関係
     public SEData getStarSE;
     public SEData switchOnSE;
-    //public SEData switchOffSE;
     public SEData sequenceFinishSE;
     public SEData objectToAndFromSE;
 
@@ -30,4 +32,5 @@ public class AudioManager : MonoBehaviour
 
     //イベントシーン関係
     public SEData earthQuakingSE;
+    public SEData clearFanfareSE;
 }

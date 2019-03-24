@@ -21,6 +21,8 @@ public class Event_TowerAppearance : MonoBehaviour
     private Vector3 tutorialObjPos;
     private float elapsedTime, elapsedTime_FromStart;
 
+    private GameObject gameManager;
+
     private void Reset()
     {
         switchObj = transform.Find("Switch").gameObject.GetComponent<SwitchManager>();
@@ -33,6 +35,7 @@ public class Event_TowerAppearance : MonoBehaviour
         tutorialObj = GameObject.Find("Tutorial_Push").transform;
         playerDestination = transform.Find("PlayerSpot");
         colSwitcher = player.GetComponent<PlayerCollisionSwitcher>();
+        gameManager = GameObject.Find("GameManager");
     }
 
     private void Update()
@@ -53,6 +56,9 @@ public class Event_TowerAppearance : MonoBehaviour
                 //起動時、プレイヤーをジャンプさせる
                 player.GetComponent<PlayerCharacterController>().enableInput = false;
                 player.GetComponent<Rigidbody>().velocity = Vector3.up * 6.0f;
+
+                //BGMを開始
+                gameManager.GetComponent<AudioSource>().Play();
             }
 
             elapsedTime += Time.deltaTime;
@@ -69,7 +75,7 @@ public class Event_TowerAppearance : MonoBehaviour
                 GameObject.Find("ToyTower").transform.position = new Vector3(0.0f, 6.0f, 0.0f);
                 colSwitcher.SetCollisionOn();
                 player.GetComponent<PlayerCharacterController>().enableInput = true;
-                GameObject.Find("GameManager").GetComponent<MainGameManager>().towerAppearanced = true;
+                gameManager.GetComponent<MainGameManager>().towerAppearanced = true;
             }
         }
     }

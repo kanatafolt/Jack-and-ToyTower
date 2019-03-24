@@ -14,7 +14,7 @@ public class GetScoreObject : MonoBehaviour
 
     private MainGameManager gameManager;
     private Transform playerCenter;
-    [SerializeField] float score = 10.0f;
+    [SerializeField] MainGameManager.ScoreType scoreType = MainGameManager.ScoreType.smallStar;
     private bool absorbing = false;
     private float elapsedTime = 0.0f;
 
@@ -32,10 +32,6 @@ public class GetScoreObject : MonoBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<MainGameManager>();
         playerCenter = GameObject.Find("PlayerCenter").transform;
         audioManager = GameObject.Find("GameManager").GetComponent<AudioManager>();
-
-        //デバッグ用：テストプレイ時、スコアオブジェクトを吸引する範囲を示す
-        //GameObject sphere = Instantiate(gameManager.debugSphere, transform.position, Quaternion.identity, transform);
-        //sphere.transform.localScale = Vector3.one * GetComponent<SphereCollider>().radius * 2.0f;
     }
 
     private void Update()
@@ -57,7 +53,7 @@ public class GetScoreObject : MonoBehaviour
 
             if ((playerCenter.position - transform.position).magnitude <= 0.1f)
             {
-                gameManager.GetScore(score);
+                gameManager.AddScore(scoreType);
 
                 //スコア獲得音
                 AudioManager.SEData seData = audioManager.getStarSE;
