@@ -9,8 +9,7 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    [System.Serializable]
-    public struct SEData
+    [System.Serializable] public struct SEData
     {
         public AudioClip clip;
         public float volume;

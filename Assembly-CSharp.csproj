@@ -71,6 +71,7 @@
     <Compile Include="Assets\Scripts\MazeSwitchMaster.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
     <Compile Include="Assets\Scripts\ObjectToAndFrom.cs" />
+    <Compile Include="Assets\Scripts\ObjectToAndFromMulti.cs" />
     <Compile Include="Assets\Scripts\OldScripts\CenterOfMass.cs" />
     <Compile Include="Assets\Scripts\OldScripts\ObjectMovement.cs" />
     <Compile Include="Assets\Scripts\PlayerCharacterController.cs" />

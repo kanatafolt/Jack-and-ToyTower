@@ -19,8 +19,7 @@ public class SafetyNet : MonoBehaviour
 
     [SerializeField] TriggerContactingOrNot[] maskTrigger = new TriggerContactingOrNot[1];          //セーフティネットを無効化する範囲を指定するトリガーコライダー
 
-    [System.Serializable]
-    [SerializeField] struct GoToMask
+    [System.Serializable] [SerializeField] struct GoToMask
     {
         public TriggerContactingOrNot mask;
         public Transform goToPoint;

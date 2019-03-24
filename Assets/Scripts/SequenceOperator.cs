@@ -22,16 +22,19 @@ public class SequenceOperator : MonoBehaviour
     [HideInInspector] public bool sequenceFinished = false;         //シークエンスが完了したかどうか
     [HideInInspector] public bool soundOn = true;                   //falseの場合SEが鳴らない
 
-    [System.Serializable] [SerializeField] struct SequenceObjects {
-        public Transform trans;                                 //展開対象オブジェクト
-        public Vector3 moveDiff;                                //移動量
-        public Vector3 rotDiff;                                 //回転量
-        public ObjectToAndFrom toAndFrom;                       //展開対象がObjectToAndFromによって制御されているなら一時停止させる
-        [HideInInspector] public Rigidbody rb;                  //オブジェクトごとのRigidbody
-        [HideInInspector] public Vector3 rotPivot;              //rotDiffから回転軸を分離
-        [HideInInspector] public float rotAngle;                //rotDiffから回転角度を分離
-        [HideInInspector] public bool sequenced;                //シークエンス完了時のイベントを管理する
-        [HideInInspector] public Vector3 quakeDiff;             //振動させる場合、その振動量
+    [System.Serializable] [SerializeField] struct SequenceObjects
+    {
+        public Transform trans;                                             //展開対象オブジェクト
+        public Vector3 moveDiff;                                            //移動量
+        public Vector3 rotDiff;                                             //回転量
+        //public ObjectToAndFrom toAndFrom;                       //展開対象がObjectToAndFromによって制御されているなら一時停止させる
+        [HideInInspector] public Rigidbody rb;                              //オブジェクトごとのRigidbody
+        [HideInInspector] public Vector3 rotPivot;                          //rotDiffから回転軸を分離
+        [HideInInspector] public float rotAngle;                            //rotDiffから回転角度を分離
+        [HideInInspector] public bool sequenced;                            //シークエンス完了時のイベントを管理する
+        [HideInInspector] public Vector3 quakeDiff;                         //振動させる場合、その振動量
+        [HideInInspector] public ObjectToAndFrom toAndFrom;                 //展開対象がObjectToAndFromによって制御されているなら一時停止させる
+        [HideInInspector] public ObjectToAndFromMulti toAndFromMulti;       //展開対象がObjectToAndFromによって制御されているなら一時停止させる
     }
     [SerializeField] SequenceObjects[] seq = new SequenceObjects[1];
 
@@ -73,6 +76,8 @@ public class SequenceOperator : MonoBehaviour
                 seq[i].trans.rotation = Quaternion.AngleAxis(-seq[i].rotAngle, seq[i].trans.TransformDirection(seq[i].rotPivot)) * seq[i].trans.rotation;
                 seq[i].sequenced = true;
                 seq[i].quakeDiff = Vector3.zero;
+                if (seq[i].trans.gameObject.GetComponent<ObjectToAndFrom>() != null) seq[i].toAndFrom = seq[i].trans.gameObject.GetComponent<ObjectToAndFrom>();
+                if (seq[i].trans.gameObject.GetComponent<ObjectToAndFromMulti>() != null) seq[i].toAndFromMulti = seq[i].trans.gameObject.GetComponent<ObjectToAndFromMulti>();
             }
         }
     }
@@ -95,6 +100,7 @@ public class SequenceOperator : MonoBehaviour
                     seq[i].rb.isKinematic = true;
 
                     if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = true;
+                    if (seq[i].toAndFromMulti != null) seq[i].toAndFromMulti.pausing = true;
                 }
                 hasRigidbody = true;
 
@@ -119,6 +125,7 @@ public class SequenceOperator : MonoBehaviour
                         //シークエンスごとの稼働時間内に入ったらシークエンス完了フラグをfalseにする
                         seq[i].sequenced = false;
                         if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = true;
+                        if (seq[i].toAndFromMulti != null) seq[i].toAndFromMulti.pausing = true;
                     }
 
                     if (!seq[i].sequenced)
@@ -159,6 +166,7 @@ public class SequenceOperator : MonoBehaviour
                             //シークエンスが完了したとき
                             seq[i].sequenced = true;
                             if (seq[i].toAndFrom != null) seq[i].toAndFrom.pausing = false;
+                            if (seq[i].toAndFromMulti != null) seq[i].toAndFromMulti.pausing = false;
 
                             //シークエンス完了音を鳴らす
                             if (soundOn)
@@ -189,7 +197,7 @@ public class SequenceOperator : MonoBehaviour
             //要らなくなったRigidbodyを破棄する処理
             for (int i = 0; i < seq.Length; i++)
             {
-                if (seq[i].toAndFrom == null)
+                if (seq[i].toAndFrom == null && seq[i].toAndFromMulti == null)
                 {
                     Destroy(seq[i].rb);
                 }

@@ -106,7 +106,7 @@ public class ObjectToAndFrom : MonoBehaviour
 
                 //移動・回転を行う
                 rb.MovePosition(transform.TransformDirection(Vector3.up * upAndDownMoveDistance + Vector3.forward * forwardAndBackMoveDistance) * deltaMoveRate + rb.position);
-                rb.MoveRotation(Quaternion.AngleAxis(tiltRotateAngle * deltaMoveRate, transform.forward) * Quaternion.AngleAxis(leftAndRightRotateAngle * deltaMoveRate, transform.up) * rb.rotation);
+                rb.MoveRotation(Quaternion.AngleAxis(tiltRotateAngle * deltaMoveRate, transform.forward) * Quaternion.AngleAxis(leftAndRightRotateAngle * deltaMoveRate, Vector3.up) * rb.rotation);
 
                 if (elapsedTime <= 0.0f || elapsedTime >= moveTime)
                 {
