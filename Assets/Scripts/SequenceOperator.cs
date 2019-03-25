@@ -20,7 +20,7 @@ public class SequenceOperator : MonoBehaviour
     [SerializeField] float openTime = 0.4f;                         //展開時間
     [SerializeField] float openInterval = 0.2f;                     //展開間隔
     [HideInInspector] public bool sequenceFinished = false;         //シークエンスが完了したかどうか
-    [HideInInspector] public bool soundOn = true;                   //falseの場合SEが鳴らない
+    public bool soundOn = true;                                     //falseの場合SEが鳴らない
 
     [System.Serializable] [SerializeField] struct SequenceObjects
     {
